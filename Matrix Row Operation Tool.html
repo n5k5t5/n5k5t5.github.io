@@ -1,0 +1,512 @@
+
+<!-- saved from url=(0066)https://www.zweigmedia.com/RealWorld/tutorialsf1/scriptpivot2.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<script language="Javascript" src="./Matrix Row Operation Tool_files/authenticationscripts.js">
+</script>
+
+<style type="text/css">
+BODY, LAYER, P, DIV, TABLE, TR, TD, TH 
+{
+font-size: 12px; 
+font-family: times;
+color: 000000;
+margin-top: 5pt;
+margin-left: 2 pt
+}
+
+.myh2 {
+font-family: Times, times new roman;
+font-weight: bold;
+color: DE0707;
+font-size: 14px;
+}
+
+A {text-decoration:none;
+color: 6666FF}
+A:HOVER {text-decoration: underline}
+
+
+H2, H3, H4 {
+color: 6666FF
+}
+
+zwI
+{ 
+color: 6666FF
+}
+
+
+.bi
+{font-style: italic;
+color: 000000}
+
+
+.rb{
+font-weight: bold;
+color: DE0707;
+}
+
+.bb{
+font-weight: bold;
+color: 000000;
+}
+
+.math {font-family: Times; font-size: 12px; font-style: italic; }
+.mathover {font-family: Times; font-size: 12px; text-decoration: overline}
+
+</style>
+
+<script language="Javascript" src="./Matrix Row Operation Tool_files/pivotscript.js">
+</script>
+
+<title>Matrix Row Operation Tool</title><meta name="Matrix Gauss Jordan Utility" content="Part of the Finite Math &amp; Applied Calculus resource site at http://www.ohaganbooks.com/StudentSite"></head>
+
+
+
+
+
+<body bgcolor="FFFFFF" link="444444" vlink="888888" alink="FFFF00" text="222222">
+
+<!-- *** Navigation Links ***-->
+<a name="top"></a>
+<center><img src="./Matrix Row Operation Tool_files/greyline.gif" height="3" width="600"></center>
+<center>
+
+<table>
+<tbody><tr>
+
+<td align="center">
+<h2><font color="444444">Pivot and Gauss-Jordan Tool for 
+<br><i><a href="http://www.finitemath.com/"><font color="998800">Finite Mathematics</font></a></i>
+<br><i><a href="http://www.finiteandcalc.com/"><font color="998800">Finite Mathematics &amp; Applied Calculus</font></a></i>
+</font></h2>
+<a href="https://www.zweigmedia.com/spreadsheets/gaussjordanpage.php?lang=en"><span style="color:indianred; font-family:arial, helvetica, sans-serif; font-size:120%; font-style:italic">Go to the new version 2.0!</span></a>
+</td>
+
+<td> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </td>
+
+<td>
+
+<a href="https://www.zweigmedia.com/RealWorld/index.html" target="_top"><font color="666666" face="arial, helvetica, sans-serif">Student Home</font></a>
+
+<br><a href="https://www.zweigmedia.com/RealWorld/utilsindex.html"><font color="666666" face="arial, helvetica, sans-serif">More On-Line Utilities</font></a>
+
+<br><a href="https://www.zweigmedia.com/RealWorld/summaryindex.html"><font color="666666" face="arial, helvetica, sans-serif">On-Line Topic Summaries</font></a>
+
+<br><a href="https://www.zweigmedia.com/RealWorld/tutindex.html"><font color="666666" face="arial, helvetica, sans-serif">On-Line Tutorials</font></a>
+
+<br><a href="https://www.zweigmedia.com/RealWorld/quizindex.html"><font color="666666" face="arial, helvetica, sans-serif">True/False Quizzes</font></a>
+
+<br><a href="https://www.zweigmedia.com/RealWorld/exercisesindex.html"><font color="666666" face="arial, helvetica, sans-serif">Topic Review Exercises</font></a>
+
+<br><a href="https://www.zweigmedia.com/RealWorld/tcfinitep.html"><font color="crimson" face="arial, helvetica, sans-serif">Everything for Finite Math</font></a>
+
+<br><a href="https://www.zweigmedia.com/RealWorld/tccalcp.html"><font color="009922" face="arial, Finite Math, sans-serif">Everything for Calculus</font></a>
+
+<br><a href="https://www.zweigmedia.com/RealWorld/tccombop.html"><font color="blue" face="arial, helvetica, sans-serif">Everything for Finite Math &amp; Calculus</font></a>
+</td>
+
+</tr>
+</tbody></table>
+
+<p><a href="https://www.zweigmedia.com/RealWorld/Summary2.html"><font color="6666666" face="arial, helvetica, sans-serif">Summary of Systems of Linear Equations</font></a> | <a href="https://www.zweigmedia.com/RealWorld/tutorialsf1/framesGJA.html"><font color="6666666" face="arial, helvetica, sans-serif">Tutorial on Row Operations</font></a> | <a href="https://www.zweigmedia.com/RealWorld/Excel/Excelindexf2.html"><font color="6666666" face="arial, helvetica, sans-serif">Excel Tutorials for Systems of Linear Equations</font></a> | <a href="https://www.zweigmedia.com/RealWorld/Excel/tuts/ExcelPivot.xls"><font color="6666666" face="arial, helvetica, sans-serif">Excel Version of This Utility</font></a> | <a href="https://www.zweigmedia.com/RealWorld/tutorialsf1/scriptpivotold.html"><font color="6666666" face="arial, helvetica, sans-serif">Previous Version of This Utility</font></a>
+</p><p>
+<img src="./Matrix Row Operation Tool_files/greyline.gif" height="3" width="600">
+</p></center>
+<!-- *** End Navigation Links ***-->
+
+<p>Use of this utility is quite intuitive. Look at the spreadsheet layout below. The left-most column is for typing in row operations (optional -- see the instructions) and the rest of it is for you to enter the matrix. Type entries in the blank cells in fraction or decimal form, starting at the top left. 
+<a href="Javascript: sesame(&#39;pivotInstructions.html&#39;,750,500)">Click here for some detailed instructions.</a>
+
+</p><p></p><center>
+
+<form name="theSpreadsheet">
+<table border="1" bordercolor="DDDDDD" cellspacing="0" noshade="" bgcolor="AAAAAA" width="90%">
+<tbody><tr><td align="center">
+
+<input type="button" value="Pivot on Selection" onclick="doIt(1)"> &nbsp;
+<input type="button" value="Divide Row by Selection" onclick="doIt(4)"> &nbsp; 
+<input type="button" value="Reduce Completely" onclick="doIt(8)"> &nbsp;
+
+<br>
+<input type="button" value="Undo" onclick="backUp()"> &nbsp;
+<input type="button" value="Redo" onclick="reDo()"> &nbsp;
+<input type="button" value="Save This" onclick="saveThis = true; readMatrix(); document.theSpreadsheet.expr.value = &#39;OK Matrix Saved.&#39;"> &nbsp;
+<input type="button" value="Revert to Saved" onclick="Revert()"> &nbsp;
+<input type="button" value="Erase Everything" onclick="doIt(3)"> &nbsp; 
+
+<br><b>Swap Rows: </b><input type="text" size="2" value="" name="p"> and <input type="text" size="2" value="" name="q"> &nbsp; <input type="button" value="Swap Them" onclick="doIt(7)"> &nbsp; &nbsp; <input type="button" value="Clear" onclick="
+document.theSpreadsheet.p.value = &#39;&#39;; 
+document.theSpreadsheet.q.value = &#39;&#39;;  
+">
+
+<br>Rounding: <input type="text" size="2" value="6" name="acc"> significant digits &nbsp;
+Mode: <select name="Mode" size="3" noscroll="" onchange="readMatrix(); displayMatrix()"> 
+	<option selected="">Decimal
+	</option><option>Fraction
+	</option><option>Integer
+	</option></select>
+</td>
+</tr>
+
+<tr><td align="center"><input type="text" size="80" value="" name="expr">
+</td></tr>
+</tbody></table>
+</form>
+
+<table><tbody>
+	<tr>
+		<td align="center">
+			<form name="rowopbuttons">
+				<table><tbody>
+					<tr>
+						<td nowrap="" align="center"><input type="button" value="Do Row Ops" onclick="doRowOps()"><input type="button" value="Clear Row Ops" onclick="document.rowops.reset()"></td>
+					</tr>
+				</tbody></table>
+			</form>
+			<form name="rowops">
+				<table bgcolor="AAAAAA"><tbody>
+					<tr><td><input type="text" size="20" value="" name="r"></td></tr>
+					<tr><td><input type="text" size="20" value="" name="r"></td></tr>
+					<tr><td><input type="text" size="20" value="" name="r"></td></tr>
+					<tr><td><input type="text" size="20" value="" name="r"></td></tr>
+					<tr><td><input type="text" size="20" value="" name="r"></td></tr>
+					<tr><td><input type="text" size="20" value="" name="r"></td></tr>
+					<tr><td><input type="text" size="20" value="" name="r"></td></tr>
+					<tr><td><input type="text" size="20" value="" name="r"></td></tr>
+					<tr><td><input type="text" size="20" value="" name="r"></td></tr>
+					<tr><td><input type="text" size="20" value="" name="r"></td></tr>
+					<tr><td><input type="text" size="20" value="" name="r"></td></tr>
+					<tr><td><input type="text" size="20" value="" name="r"></td></tr>
+					<tr><td><input type="text" size="20" value="" name="r"></td></tr>
+					<tr><td><input type="text" size="20" value="" name="r"></td></tr>
+					<tr><td><input type="text" size="20" value="" name="r"></td></tr>
+				</tbody></table>
+			</form>
+		</td>
+		<td align="center">
+			<form name="rowopbuttons2">
+				<table><tbody>
+					<tr>
+						<td nowrap="" align="center"><input type="button" value="Condense Tableau" onclick="document.rowops.reset()"></td>
+					</tr>
+				</tbody></table>
+			</form>
+			<form name="lpstuff">
+				<table bgcolor="AAAAAA"><tbody>
+					<tr><td><input type="text" size="10" value="" name="basic"></td><td><input type="text" size="10" value="" readonly name="theta" style="background-color:DDDDDD" ></td></tr>
+					<tr><td><input type="text" size="10" value="" name="basic"></td><td><input type="text" size="10" value="" readonly name="theta" style="background-color:DDDDDD"></td></tr>
+					<tr><td><input type="text" size="10" value="" name="basic"></td><td><input type="text" size="10" value="" readonly name="theta" style="background-color:DDDDDD"></td></tr>
+					<tr><td><input type="text" size="10" value="" name="basic"></td><td><input type="text" size="10" value="" readonly name="theta" style="background-color:DDDDDD"></td></tr>
+					<tr><td><input type="text" size="10" value="" name="basic"></td><td><input type="text" size="10" value="" readonly name="theta" style="background-color:DDDDDD"></td></tr>
+					<tr><td><input type="text" size="10" value="" name="basic"></td><td><input type="text" size="10" value="" readonly name="theta" style="background-color:DDDDDD"></td></tr>
+					<tr><td><input type="text" size="10" value="" name="basic"></td><td><input type="text" size="10" value="" readonly name="theta" style="background-color:DDDDDD"></td></tr>
+					<tr><td><input type="text" size="10" value="" name="basic"></td><td><input type="text" size="10" value="" readonly name="theta" style="background-color:DDDDDD"></td></tr>
+					<tr><td><input type="text" size="10" value="" name="basic"></td><td><input type="text" size="10" value="" readonly name="theta" style="background-color:DDDDDD"></td></tr>
+					<tr><td><input type="text" size="10" value="" name="basic"></td><td><input type="text" size="10" value="" readonly name="theta" style="background-color:DDDDDD"></td></tr>
+					<tr><td><input type="text" size="10" value="" name="basic"></td><td><input type="text" size="10" value="" readonly name="theta" style="background-color:DDDDDD"></td></tr>
+					<tr><td><input type="text" size="10" value="" name="basic"></td><td><input type="text" size="10" value="" readonly name="theta" style="background-color:DDDDDD"></td></tr>
+					<tr><td><input type="text" size="10" value="" name="basic"></td><td><input type="text" size="10" value="" readonly name="theta" style="background-color:DDDDDD"></td></tr>
+					<tr><td><input type="text" size="10" value="" name="basic"></td><td><input type="text" size="10" value="" readonly name="theta" style="background-color:DDDDDD"></td></tr>
+					<tr><td><input type="text" size="10" value="" name="basic"></td><td><input type="text" size="10" value="" readonly name="theta" style="background-color:DDDDDD"></td></tr>
+				</tbody></table>
+			</form>
+			</td>		
+		<td valign="bottom">
+			<form name="labels">
+				<table bgcolor="AAAAAA"><tbody>
+					<tr>
+						<td><input type="text" size="10" value="    x1" name="k" ondblclick="doIt(101)"></td>
+						<td><input type="text" size="10" value="    x2" name="k" ondblclick="doIt(102)"></td>
+						<td><input type="text" size="10" value="    x3" name="k" ondblclick="doIt(103)"></td>
+						<td><input type="text" size="10" value="    x4" name="k" ondblclick="doIt(104)"></td>
+						<td><input type="text" size="10" value="    x5" name="k" ondblclick="doIt(105)"></td>
+						<td><input type="text" size="10" value="    x6" name="k" ondblclick="doIt(106)"></td>
+						<td><input type="text" size="10" value="    x7" name="k" ondblclick="doIt(107)"></td>
+						<td><input type="text" size="10" value="    x8" name="k" ondblclick="doIt(108)"></td>
+						<td><input type="text" size="10" value="    x9" name="k" ondblclick="doIt(109)"></td>
+						<td><input type="text" size="10" value="   x10" name="k" ondblclick="doIt(110)"></td>
+						<td><input type="text" size="10" value="   x11" name="k" ondblclick="doIt(111)"></td>
+						<td><input type="text" size="10" value="   x12" name="k" ondblclick="doIt(112)"></td>
+						<td><input type="text" size="10" value="   x13" name="k" ondblclick="doIt(113)"></td>
+						<td><input type="text" size="10" value="   x14" name="k" ondblclick="doIt(114)"></td>
+						<td><input type="text" size="10" value="   x15" name="k" ondblclick="doIt(115)"></td>
+					</tr>
+				</tbody></table>
+			</form>
+			<form name="theSpreadsheet1">
+				<table bgcolor="FFFFFF"><tbody>
+					<tr>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(1,1)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(1,2)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(1,3)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(1,4)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(1,5)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(1,6)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(1,7)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(1,8)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(1,9)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(1,10)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(1,11)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(1,12)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(1,13)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(1,14)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(1,15)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					</tr>
+					<tr>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(2,1)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(2,2)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(2,3)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(2,4)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(2,5)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(2,6)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(2,7)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(2,8)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(2,9)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(2,10)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(2,11)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(2,12)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(2,13)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(2,14)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(2,15)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					</tr>
+					<tr>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(3,1)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(3,2)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(3,3)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(3,4)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(3,5)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(3,6)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(3,7)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(3,8)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(3,9)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(3,10)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(3,11)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(3,12)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(3,13)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(3,14)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(3,15)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					</tr>
+					<tr>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(4,1)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(4,2)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(4,3)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(4,4)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(4,5)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(4,6)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(4,7)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(4,8)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(4,9)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(4,10)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(4,11)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(4,12)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(4,13)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(4,14)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(4,15)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					</tr>
+					<tr>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(5,1)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(5,2)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(5,3)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(5,4)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(5,5)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(5,6)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(5,7)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(5,8)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(5,9)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(5,10)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(5,11)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(5,12)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(5,13)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(5,14)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(5,15)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					</tr>
+					<tr>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(6,1)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(6,2)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(6,3)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(6,4)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(6,5)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(6,6)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(6,7)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(6,8)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(6,9)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(6,10)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(6,11)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(6,12)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(6,13)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(6,14)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+						<td><input type="text" size="10" value="" name="k" onfocus="checkIn(6,15)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					</tr>
+					<tr>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(7,1)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(7,2)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(7,3)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(7,4)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(7,5)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(7,6)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(7,7)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(7,8)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(7,9)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(7,10)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(7,11)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(7,12)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(7,13)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(7,14)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(7,15)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					</tr>
+					<tr>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(8,1)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(8,2)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(8,3)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(8,4)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(8,5)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(8,6)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(8,7)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(8,8)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(8,9)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(8,10)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(8,11)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(8,12)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(8,13)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(8,14)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(8,15)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					</tr>
+					<tr>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(9,1)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(9,2)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(9,3)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(9,4)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(9,5)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(9,6)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(9,7)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(9,8)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(9,9)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(9,10)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(9,11)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(9,12)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(9,13)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(9,14)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(9,15)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					</tr>
+					<tr>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(10,1)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(10,2)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(10,3)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(10,4)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(10,5)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(10,6)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(10,7)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(10,8)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(10,9)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(10,10)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(10,11)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(10,12)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(10,13)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(10,14)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(10,15)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					</tr>
+					<tr>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(11,1)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(11,2)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(11,3)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(11,4)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(11,5)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(11,6)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(11,7)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(11,8)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(11,9)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(11,10)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(11,11)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(11,12)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(11,13)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(11,14)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(11,15)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					</tr>
+					<tr>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(12,1)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(12,2)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(12,3)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(12,4)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(12,5)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(12,6)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(12,7)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(12,8)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(12,9)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(12,10)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(12,11)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(12,12)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(12,13)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(12,14)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(12,15)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					</tr>
+					<tr>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(13,1)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(13,2)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(13,3)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(13,4)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(13,5)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(13,6)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(13,7)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(13,8)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(13,9)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(13,10)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(13,11)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(13,12)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(13,13)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(13,14)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(13,15)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					</tr>
+					<tr>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(14,1)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(14,2)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(14,3)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(14,4)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(14,5)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(14,6)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(14,7)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(14,8)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(14,9)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(14,10)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(14,11)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(14,12)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(14,13)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(14,14)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(14,15)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					</tr>
+					<tr>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(15,1)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(15,2)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(15,3)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(15,4)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(15,5)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(15,6)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(15,7)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(15,8)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(15,9)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(15,10)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(15,11)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(15,12)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(15,13)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(15,14)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(15,15)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					</tr>
+				</tbody></table>
+			</form>
+		</td>
+	</tr>
+</tbody></table>
+
+
+<p><b>Disclaimer: </b>Browsers sometimes crash when running computation-intensive Javascript code. Make sure your important work is saved before running this utility.
+
+</p><p></p><center><img src="./Matrix Row Operation Tool_files/greyline.gif" height="3" width="600">
+<!--****endmatter*****-->
+<p><font color="00AA55">Last Updated:<i> January, 2006</i> 
+<br>Copyright � 1999 Stefan Waner and Steven R. Costenoble </font>
+</p><p><a href="https://www.zweigmedia.com/RealWorld/tutorialsf1/scriptpivot2.html#top"><font face="arial, helvetica, sans-serif">Top of Page</font></a></p></center>
+
+
+
+
+</center></body></html>
