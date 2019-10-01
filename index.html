@@ -1,3 +1,4 @@
+
 <!-- saved from url=(0066)https://www.zweigmedia.com/RealWorld/tutorialsf1/scriptpivot2.html -->
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
 <script language="Javascript" src="./Matrix Row Operation Tool_files/authenticationscripts.js">
@@ -123,7 +124,7 @@ color: 000000;
 <table border="1" bordercolor="DDDDDD" cellspacing="0" noshade="" bgcolor="AAAAAA" width="90%">
 <tbody><tr><td align="center">
 
-<input type="button" value="Pivot on Selection" onclick="doIt(1)"> &nbsp;
+<!--<input type="button" value="Pivot on Selection" onclick="doIt(1)"> &nbsp;-->
 <input type="button" value="Divide Row by Selection" onclick="doIt(4)"> &nbsp; 
 <input type="button" value="Reduce Completely" onclick="doIt(8)"> &nbsp;
 
@@ -148,7 +149,7 @@ Mode: <select name="Mode" size="3" noscroll="" onchange="readMatrix(); displayMa
 </td>
 </tr>
 
-<tr><td align="center"><input type="text" size="80" value="" name="expr">
+<tr><td align="center"><input type="button" value="Pivot on Selection" onclick="doIt(1)"> &nbsp;<input type="text" size="80" value="" name="expr">
 </td></tr>
 </tbody></table>
 </form>
@@ -184,10 +185,10 @@ Mode: <select name="Mode" size="3" noscroll="" onchange="readMatrix(); displayMa
 			</form>
 		</td>
 		<td align="center">
-			<form name="rowopbuttons2">
+			<form name="lpbuttons">
 				<table><tbody>
 					<tr>
-						<td nowrap="" align="center"><input type="button" value="Condense Tableau" onclick="document.rowops.reset()"></td>
+						<td nowrap="" align="center"><input type="button" value="Condense" onclick=""><input type="button" value="Show Ratios" onclick="showRatios()"></td>
 					</tr>
 				</tbody></table>
 			</form>

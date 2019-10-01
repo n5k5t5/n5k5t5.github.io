@@ -948,6 +948,11 @@ else {
 
 doNotReduce = true;		// turns off automatic reduction
 verifyPivots();
+//clear ratios
+for(var i = 0; i< maxRows; i++){
+	document.lpstuff[2*i + 1].value = "";
+	document.lpstuff[2*i +1].style = "background-color:DDDDDD";
+}
 return(0);
 }
 
@@ -1105,6 +1110,9 @@ for (var ijk = 1; ijk <= numRows; ijk++)
 		} // ijk
 } // end of doRowOps
 
+function showRatios(){
+	doIt(100 + activeY);
+}
 function parseRowOp(inString) {
 	document.theSpreadsheet.expr.value = "";
 	var theResult = new Array();
@@ -1197,12 +1205,12 @@ function paintCol(colnum, color){
 }
 
 function verifyPivots(){
-	for(i = 1; i <= maxRows; i++){
-		ok = true;
+	for(var i = 1; i <= maxRows; i++){
+		var ok = true;
 		var pivotCol = theBasis[i];
 			if(pivotCol == 0 ) continue; //no pivot in this row
 			if(theMatrix[i][pivotCol] == 1)  {
-				for(j = 1; j <= numRows; j++)//check for nonzeros above and below the pivot
+				for(var j = 1; j <= numRows; j++)//check for nonzeros above and below the pivot
 					if (i != j &&   theMatrix[j][pivotCol] != 0 ) {ok = false; break;}
 				}
 			else ok = false;
@@ -1243,6 +1251,7 @@ function doIt(){
 			{
 
 			pivot(theMatrix,numRows,numCols,activeX,activeY);
+
 			var leaving = theBasis[activeX];
 			if(leaving != activeY){
 				if(leaving >0) paintCol(leaving, "FFFFFF");
@@ -1250,9 +1259,10 @@ function doIt(){
 				document.theSpreadsheet1[maxCols*(activeX-1) + activeY -1].style="background-color:AAAAAA";
 				theBasis[activeX] = activeY;
 				document.lpstuff[2*activeX -2].value = theLabels[activeY];
-				for(i = 1; i <= maxRows; i++)//cannot have two pivots in the same column
-					if(theBasis[i] == activeY && i != activeX) theBasis[i] = 0;
-				
+				for(var i = 1; i <= maxRows; i++)//cannot have two pivots in the same column
+					if(theBasis[i] == activeY && i != activeX) {
+						theBasis[i] = 0;
+						document.lpstuff[2*(i - 1)].value = "";}
 			}
 			displayMatrix();
 			document.theSpreadsheet.expr.value = "Done."
