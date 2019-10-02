@@ -149,7 +149,7 @@ Mode: <select name="Mode" size="3" noscroll="" onchange="readMatrix(); displayMa
 </td>
 </tr>
 
-<tr><td align="center"><input type="button" value="Pivot on Selection" onclick="doIt(1)"> &nbsp;<input type="text" size="80" value="" name="expr">
+<tr><td align="center"><input type="button" value="Paste" onclick="doIt(9)"> &nbsp;<input type="button" id="submatrix" value="Submatrix" onclick="doIt(10)"> &nbsp;<input type="button" value="Pivot on Selection" onclick="doIt(1)"> &nbsp;<input type="text" size="80" value="" name="expr">
 </td></tr>
 </tbody></table>
 </form>
@@ -475,7 +475,7 @@ Mode: <select name="Mode" size="3" noscroll="" onchange="readMatrix(); displayMa
 					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(14,15)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
 					</tr>
 					<tr>
-					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(15,1)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
+					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(15,1)" onblur="handleBlur()"  ondblclick="doIt(1)"></td>
 					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(15,2)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
 					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(15,3)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
 					<td><input type="text" size="10" value="" name="k" onfocus="checkIn(15,4)" onblur="handleBlur()" ondblclick="doIt(1)"></td>
@@ -508,6 +508,6 @@ Mode: <select name="Mode" size="3" noscroll="" onchange="readMatrix(); displayMa
 
 </center>
 <!-- -- for copying selected cells ---->
-<!--<textarea style="position:fixed;top:0px;left:0px;width:2px;height:2px;padding:0;border:none;color:green;resize:none;overflow:hidden;color:transparent;" id="datapaste"></textarea>
--->
+<textarea style="position:fixed;top:0px;left:0px;width:2px;height:2px;padding:0;border:none;color:green;resize:none;overflow:hidden;color:transparent;" id="datapaste"></textarea>
+
 

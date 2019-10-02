@@ -4,7 +4,7 @@
 // *** ERROR HANDLING
 window.onerror = myErrorTrap;
 
-var dataBlock="I AM HERE"; // for copying data
+var dataBlock= ""; // for copying data
 
 // var exit = false; // get out of here
 var okToRoll = true;		// preliminary testing results
@@ -67,6 +67,11 @@ var PivotColHeight = 0;
 var numSigDigs = 6;					// default accuracy
 var theSmallestNumber = 0.000000000001	// everything smaller is set to zero
 
+var submatrixSelectionStage = 0;
+var submat11 = 0;
+var submat12 = 0;
+var submat21 = 0;
+var submat22 =0; 
 // old globals below...
 
 var maxDenom = 10000;  // for fraction approximation
@@ -648,7 +653,7 @@ function sesame(url,hsize,vsize){
 // ***************************
 
 // ********ACTIVE CELL CHECK*********
-function checkIn() {
+function checkIn() {	
 lineSkip = false
 prevX = activeX;
 prevY = activeY; 
@@ -680,6 +685,9 @@ return(true);
 // ******END ACTIVE CELL CHeCK ******
 
 // ********TAB-ING HANDLE BLUR *****
+//function onClick(){
+//	if (submatrixSelectionStage ==1) doIt(10);
+//}
 function handleBlur() {
 
 return(true);
@@ -1381,7 +1389,8 @@ function isInBasicForm(){
 	var s2 = { mat: s.mat, lab :s.lab, }
  }*/
 function doIt(){
-
+	var x;
+	var y;
 	fractionMode = false;
 	integerMode = false;
 	var theMode = document.theSpreadsheet.Mode.selectedIndex;
@@ -1599,7 +1608,78 @@ function doIt(){
 		document.theSpreadsheet.expr.value = "The matrix is reduced."
 		} // end of Option 8
 
-		//Options 101 to 100+maxCols Compute Theta Ratios
+		
+	else if (num == 9){//paste
+		x = activeX;
+		y = activeY;
+		//alert("You want to paste from " + x + " , " + y +"?");
+		var theStr = document.theSpreadsheet1[(x-1)*maxCols + y-1].value;
+		//alert("I read the data.");
+		if(theStr.search(/[\r\t]/)==-1) {alert("Bad data");return false;}
+		else {
+			// some fixing up for spaces arond signs
+			theStr=theStr.replace(/( )([\+\-\/\*])( )/g,"$2");
+			var rowArr=theStr.split(" ");
+			var nr=rowArr.length;
+			for (var i=0;i<nr;i++) {
+				var colArr=rowArr[i].split("\t");
+				for (var j=0;j<colArr.length;j++){
+					//alert("So far so good, want to write " + colArr[j]);
+					document.theSpreadsheet.expr.value = colArr[j];
+					document.theSpreadsheet1[maxCols*(x+i-1) + y+ j-1].value=colArr[j];
+				}
+			}		
+		}
+	}
+	else if(num ==10){//select a submatrix
+		//alert("You want to select a submatrix?");
+		x = activeX;
+		y = activeY;
+		document.theSpreadsheet.expr.value = "selected " + submatrixSelectionStage + " " + x + " " + y;
+		
+		if(submatrixSelectionStage ==0){
+			submat11 = x;
+			submat12 = y;	
+			document.theSpreadsheet1[(submat11-1)*maxCols + submat12-1].style= "background-color:orange";
+			submatrixSelectionStage = 1;
+			document.theSpreadsheet.expr.value = "Select the other corner and press submatrix again.";
+			return;
+		}
+		if(submatrixSelectionStage == 1){
+			submat21 = x;
+			submat22 = y;	
+			document.theSpreadsheet.expr.value = "selected " + submatrixSelectionStage + " " + submat11 + " " + submat12 + " to " + x + " " + y;
+			dataBlock = "";
+			for(var i = submat11; i <= x; i++){
+				for(var j = submat12; j<= y; j++){
+					//alert("i , j = " + i + " " + j + " " + dataBlock);
+					var val = document.theSpreadsheet1[(i-1)*maxCols + j-1].value;
+					dataBlock += val + ( (j==y)?"":"\t");
+					//f(j< y) dataBlock += "\t";
+					//else dataBlock += "\n";
+					document.theSpreadsheet1[(i-1)*maxCols + j-1].style="background-color:orange";
+				}
+				dataBlock += ((i==x)?"":"\n");
+			}
+			document.getElementById("datapaste").value=dataBlock;
+			document.getElementById("datapaste").select();
+			//document.theSpreadsheet.expr.value = "Press Submatrix to clear";
+
+			submatrixSelectionStage = 3;
+			return;
+		}
+		if(submatrixSelectionStage ==3){
+			for(var i = submat11; i <= submat21; i++){
+				for(var j = submat12; j<= submat22; j++){
+					document.theSpreadsheet1[(i-1)*maxCols + j-1].style="background-color:white";
+				}
+			}
+			submatrixSelectionStage = 0;
+			return;
+		}
+		
+	}
+	//Options 101 to 100+maxCols Compute Theta Ratios
 	else if (1 <= num - 100  <= maxCols )
 		{
 		var pivCol = num - 100;
