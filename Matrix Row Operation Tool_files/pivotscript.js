@@ -4,6 +4,8 @@
 // *** ERROR HANDLING
 window.onerror = myErrorTrap;
 
+var dataBlock="I AM HERE"; // for copying data
+
 // var exit = false; // get out of here
 var okToRoll = true;		// preliminary testing results
 var doNotReduce = true;	// automatic reduction in integer mode is off by default
@@ -12,6 +14,8 @@ var tab = unescape( "%09" );	// these are now the appropriate strings;
 var cr = unescape( "%0D" );	
 var activeX = 1;		// activated cell coords
 var activeY = 1;
+var theX;
+var theY;
 var prevX = 0;			// previously active cell
 varPrevY = 0;
 var comma = ",";
@@ -42,13 +46,24 @@ var stackPtr = 0;
 var theMatrix = new makeArray2(maxRows,maxCols); 
 				// we will only work with submatrix numRows x numCols
 var theSavedMatrix = new makeArray2(maxRows,maxCols); 	// to revert to saved matrix
+var theSavedBasis = new makeArray(maxRows);
+var theSavedLabels = new makeArray(maxCols);
+var savedCondensed = false;
+var savedColMap = new makeArray(maxCols + 1);
+var savedNumRows = 0;
+var savedNumCols = 0;
 var theFistBackupMatrix = new makeArray2(maxRows,maxCols); 	// saves latest operation
 var theBackMatrix = new makeArray3(maxRows,maxCols, maxBackSteps);
 var theBackStatus = new Array();
 var saveThis = true;
-var theBasis = new makeArray(maxRows); //basic variables
+var theBasis = new makeArray(maxRows+1); //basic variables
 for(var i = 0; i < maxRows; i++) theBasis[i] = 0;
-var theLabels = new makeArray(maxCols); //variable labels
+var theLabels = new makeArray(maxCols+1); //variable labels
+var theRowLabels = new makeArray(maxRows +1)// row labels
+var condensed = false; //tableau type
+var colMap = new makeArray(maxCols + 1);//the order in which the columns are to be displayed
+for(var i =0; i <= maxCols; i++) colMap[i] = i;
+var PivotColHeight = 0;
 var numSigDigs = 6;					// default accuracy
 var theSmallestNumber = 0.000000000001	// everything smaller is set to zero
 
@@ -388,7 +403,7 @@ return(result);
 
 // ************ MAKE INTEGER
 // Makes a matrix integer by least common multiples of rows
-// returms a matrix of STRINGS if Strings = true else gives integers
+// returns a matrix of STRINGS if Strings = true else gives integers
 // input = a matrix of real floats
 
 
@@ -532,7 +547,7 @@ return(InMatrix);
 function divideRowbySelection(InMatrix,rows,cols,theRow,theCol) {
 // if it is in integer mode and division results in fractions, switches to fraction mode
 
-var theNumber = theMatrix[activeX][activeY];
+var theNumber = theMatrix[theX][theY];
 var integerFlag = true;
 var num = 1;
 // it should not be zero at this point...
@@ -671,9 +686,12 @@ return(true);
 } // handleBlur
 // ********END HANDLE BLUR *********
 
+
+
 // *************READ THE MATRIX********************
 function readMatrix() {
 // reads the current Matrix
+theX = activeX;
 
 if ((!fractionMode) && (!integerMode)) doIt(2);		// rounding information
 
@@ -688,6 +706,7 @@ for (var i = 1; i <= maxRows; i++)
 	{
 	for (var j = 1; j <= maxCols; j++)
 		{
+		theMatrix[i][j] = 0;
 		var theString = stripSpaces(document.theSpreadsheet1[count].value);
 		theString=stripChar(theString,",");
 		if (theString == "")
@@ -704,36 +723,69 @@ for (var i = 1; i <= maxRows; i++)
 
 numRows = theRowSize; 			// reset globals here
 numCols = theColSize; 			// reset globals here
+//alert("read matrix, numRows = " + numRows);
+//alert("Read matrix, " + theMatrix[numRows+1][1] + " " + theMatrix[numRows+1][2] + " " + theMatrix[numRows+1][3] + " " + theMatrix[numRows+1][4] + " " +  theMatrix[numRows+1][5] );
+//displayed positions of theMatrix columns
+  for( var i = 1; i <= numCols; i++)
+    if(condensed) colMap[i] = numRows + i; //put basic variables first
+    else colMap[i] = i; //no remapping of columns
+                                               
+theY = colMap[activeY];
 count = 0;
 for (i = 1; i <= maxRows; i++)
 	{
 	for (j = 1; j <= maxCols; j++)
 		{
-		theString = stripSpaces(document.theSpreadsheet1[count].value);
-		theString=stripChar(theString,",");
-		if (theString == "")
-			{
-			theMatrix[i][j] = 0;
-			if ( (theRowSize>=i) && (theColSize >= j) ) document.theSpreadsheet1[count].value = "0";
+		if((theRowSize>=i) && (theColSize >= j)){
+			theString = stripSpaces(document.theSpreadsheet1[count].value);
+			theString=stripChar(theString,",");
+			if (theString == ""){
+				theMatrix[i][colMap[j]] = 0;
+				document.theSpreadsheet1[count].value = "0";
 			}
-		else
-			{
-			theMatrix[i][j] = eval(theString);
+			else{
+				theMatrix[i][colMap[ j] ] = eval(theString);
 			}
+		}
 		// starts numbering at 0
 		count++; 
 		} // j
 	} // i
-// read variable labels
- for (j = 1; j<= theColSize; j++)
+  
+//augment with an identity matrix on the left if in condensed mode
+if(condensed)
+  for(var j = 1; j <= numRows; j++)
+      for(var i = 1; i <=numRows; i++)
+        if( i == j) theMatrix[i][j] = 1;
+        else theMatrix[i][j] = 0;
+ 
+// read variable labels from the column headers
+ for (var j = 1; j<= theColSize; j++)
 	{ 
 		theString = stripSpaces(document.labels[j-1].value);
 		theString = stripChar(theString,",");
 		if( theString == "")
-			{ theString = j.toString();}
-		theLabels[j] = theString;
+			{ theString = "x" + j.toString();}
+		theLabels[colMap[j]] = theString;
+	}
+// read variable labels from the rows if condensed
+ if(condensed)
+ {// read variable labels from the rows if condensed
+    for (var i = 1; i<= theRowSize; i++)
+     {
+       theString = stripSpaces(document.lpstuff[2*(i-1)].value);
+       theString = stripChar(theString,",");
+       if( theString == "")
+         { theString = "y"  + i.toString();}
+       theRowLabels[i] = theString;
+       theLabels[i] = theString;
+     }
+    //set the pivot locations in theBasis
+   	for(var i = 0; i <= numRows; i++){
+		theBasis[i] = i;}
+	numCols = numRows + numCols; 	 
+}
 
-	} 
 // save this if they want it
 if (saveThis)
 	{
@@ -745,9 +797,22 @@ if (saveThis)
 		theSavedMatrix[i][j] = theMatrix[i][j];
 		} // j
 	} // i
-	
-	} // if save this
-
+	//save pivots
+	for(i = 1; i <= maxRows; i++){
+		theSavedBasis[i] = theBasis[i];
+	}
+	//save labels
+	for(i = 1; i <=maxCols; i++){
+		theSavedLabels[i] = theLabels[i];
+	}
+	//save type of tableau
+	savedCondensed = condensed;
+	} 
+	//save colMap
+	for(i = 1; i <= numCols; i++) savedColMap[i] = colMap[i];
+	//save row /col nums
+	savedNumRows = numRows;
+	savedNumCols = numCols;
 
 // save the settings
 backSteps++;
@@ -903,25 +968,34 @@ return(true);
 
 // ****** DISPLAY CURRENT MATRIX ****
 function displayMatrix() {
-
-var RowNum = numRows;
-var ColNum = numCols;
-var x = "";  // a string
+	verifyPivots();
+	if(!isInBasicForm() && condensed){
+		switchTableauType();
+		return;
+	}
+	var numDisplayedCols = numCols;
+  	if(condensed) {
+		numDisplayedCols = numCols-numRows;
+		//write column labels
+		for(var i = 1; i <=numCols-numRows; i++){
+			document.labels[i-1].value = theLabels[colMap[i]];
+		}
+	}
+	var RowNum = numRows;
+	var ColNum = numCols;
+	var x = "";  // a string
 // alert("about to display a "+ RowNum+ " x " + ColNum + "matrix");
-
-if (integerMode) 
-	{
-	theMatrix = makeInteger(theMatrix, numRows, numCols, true)
-	var count = 0;
-	for (var i = 1; i <= maxRows; i++)
-		{
-		for (var j = 1; j <= maxCols; j++)
-			{
-			if ( (i <= numRows) &&  (j <= numCols)) document.theSpreadsheet1[count].value = theMatrix[i][j];
-			count++; 
+	if (integerMode) {
+		theMatrix = makeInteger(theMatrix, numRows, numCols, true)
+		var count = 0;
+		for (var i = 1; i <= maxRows; i++){
+			for (var j = 1; j <= maxCols; j++){
+				if ( (i <= numRows) &&  (j <= numDisplayedCols)) {
+					document.theSpreadsheet1[count].value = theMatrix[i][colMap[j]];
+				}
+				count++; 
 			} // j
 		} // i
-
 	} // if integer mode
  // else, handle fractions & decimals
 else {
@@ -930,14 +1004,13 @@ else {
 		{
 		for (var j = 1; j <= maxCols; j++) 		
 			{
-			if ( (i <= numRows) &&  (j <= numCols))
+			if ( (i <= numRows) &&  (j <= numDisplayedCols))
 	 			{
 // alert("i = "+i + " j = " + j + "table entry = " + theMatrix[i][j]);
-			if (fractionMode) x = toFrac (roundSigDig(theMatrix[i][j],15) , maxDenom, tol);  
-			else {x = roundSigDig(theMatrix[i][j], numSigDigs).toString()};
+			if (fractionMode) x = toFrac (roundSigDig(theMatrix[i][colMap[j]],15) , maxDenom, tol);
+			else {x = roundSigDig(theMatrix[i][colMap[j]], numSigDigs).toString()};
 
 // alert("x = "+x);	
- 
 			document.theSpreadsheet1[count].value = x;
 			} // if ok
 			count++;
@@ -947,12 +1020,12 @@ else {
 	} // end else (if not integer mode)
 
 doNotReduce = true;		// turns off automatic reduction
-verifyPivots();
+
 //clear ratios
 for(var i = 0; i< maxRows; i++){
 	document.lpstuff[2*i + 1].value = "";
 	document.lpstuff[2*i +1].style = "background-color:DDDDDD";
-}
+	}
 return(0);
 }
 
@@ -1113,6 +1186,57 @@ for (var ijk = 1; ijk <= numRows; ijk++)
 function showRatios(){
 	doIt(100 + activeY);
 }
+
+function onSwitchTableauType(){
+	readMatrix();
+	switchTableauType();
+}
+function switchTableauType(){
+	if(condensed){ 
+		for(var i  = 1; i <= numCols; i++) {
+			//remap columns
+			colMap[i] = i;
+			//write column labels
+			document.labels[i-1].value = theLabels[colMap[i]];
+		}
+		//paint pivots
+		for(var i = 1; i<=numRows; i++) paintPivot(i,i);	
+	}	
+	else {//not condensed
+		verifyPivots();
+		if(isInBasicForm()){ 
+			//find unpivoted columns
+			var k = 1;
+			for(var j = 1; j <= numCols; j++){
+				//erase column labels
+				document.labels[j-1].value = "";
+				var pivoted = false;
+				for(var i = 1; i<=numRows; i++){
+					document.theSpreadsheet1[(i-1)*maxRows + j-1].style="background-color:FFFFFF";
+					if(j>numCols-numRows)
+						document.theSpreadsheet1[(i-1)*maxRows + j-1].value = "";
+					if(theBasis[i] == j) {
+						pivoted = true;
+					}
+				}
+				if(!pivoted){
+					colMap[k] = j;
+					k++;
+				}
+			}
+		}
+		else{
+			document.theSpreadsheet.expr.value = "Cannot condense because some rows contain no pivot. ";
+			return;
+		}
+	}	 //not condensed 
+  	condensed = !condensed;
+	displayMatrix()
+ 	if(condensed) value = "  Expand  ";
+ 	else value = "Condense";
+ 	document.lpbuttons[0].value = value;
+}
+                                           
 function parseRowOp(inString) {
 	document.theSpreadsheet.expr.value = "";
 	var theResult = new Array();
@@ -1193,38 +1317,69 @@ theResult[4] = coeff2;
 // end debug
 return(theResult);
 
-
 	} // parseRowOp
 
-function paintCol(colnum, color){
-	count = colnum - 1
-	for( i = 0; i < numRows; i++){
+function paintCol(colnum, color, t, b){ //from t down to b
+	var count = maxCols*(t-1) +  colnum - 1
+	for(var i = t; i <= b; i++){
 		document.theSpreadsheet1[count].style = "background-color:" + color;
 		count += maxCols;
 	}
 }
 
+function paintPivot(r, c){
+	var count = c - 1
+	for(var i = 0; i < numRows; i++){
+		document.theSpreadsheet1[count].style = "background-color:" + "DDDDDD";
+		count += maxCols;
+	}	
+	document.theSpreadsheet1[(r-1)*maxCols + c-1].style = "background-color:" + "AAAAAA";
+}
 function verifyPivots(){
+	//alert("verifying pivots")
 	for(var i = 1; i <= maxRows; i++){
 		var ok = true;
 		var pivotCol = theBasis[i];
-			if(pivotCol == 0 ) continue; //no pivot in this row
-			if(theMatrix[i][pivotCol] == 1)  {
-				for(var j = 1; j <= numRows; j++)//check for nonzeros above and below the pivot
-					if (i != j &&   theMatrix[j][pivotCol] != 0 ) {ok = false; break;}
-				}
+		if(pivotCol == 0 ) continue; //no pivot in this row
+		//alert("row, pivot = " + i + " " + pivotCol);
+		if(theMatrix[i][pivotCol] == 1)  {
+			for(var j = 1; j <= numRows; j++)//check for nonzeros above and below the pivot
+				if (i != j &&   theMatrix[j][pivotCol] != 0 ) {ok = false; break;}
+			}
 			else ok = false;
 		if(ok){
-			document.lpstuff[2*(i-1)].value = theLabels[pivotCol];}
-		else{//remove pivot 
+			if(!condensed) {
+				paintPivot(i, pivotCol );
+				paintCol(pivotCol, "FFFFFF", numRows+1, maxRows);
+			}
+			document.lpstuff[2*(i-1)].value = theLabels[pivotCol];
+		}
+		else {//remove pivot 
 			theBasis[i] = 0;
-			paintCol(pivotCol, "FFFFFF");
-			document.lpstuff[2*(i - 1)].value = "";}
-	
-		}//for
-	}//verifyPivots
+			if(!condensed){
+			  paintCol(pivotCol, "FFFFFF", 1, maxRows);
+			}
+			document.lpstuff[2*(i - 1)].value = "";
+	    	
+		}
+	}//for
+}//verifyPivots
 
-
+function isInBasicForm(){
+	//must run verifyPivots() first
+  for(var i = 1; i <= numRows; i ++)
+	if( theBasis[i] == 0) return false;
+  return true;	
+ }
+ 
+ /*function closeState(s){
+	var mat = new makeArray2(numRows+1, numCols+1);
+	for(var i=1; i <=s.r; i ++)
+		for(var j = 1; j <= s.c; j++)
+			mat[i][j] = s.mat[i][j];
+	var mat
+	var s2 = { mat: s.mat, lab :s.lab, }
+ }*/
 function doIt(){
 
 	fractionMode = false;
@@ -1241,28 +1396,34 @@ function doIt(){
 	if (num == 1)
 		{
 		readMatrix();
-		verifyPivots();
-		if (theMatrix[activeX][activeY] == 0) 
+		if(!condensed) verifyPivots();
+		if (theMatrix[theX][theY] == 0)
 			{
 			okToRoll = false;
 			document.theSpreadsheet.expr.value = "You cannot pivot on a zero."
 			}
 		if (okToRoll)
 			{
+			pivot(theMatrix,numRows,numCols,theX,theY);
 
-			pivot(theMatrix,numRows,numCols,activeX,activeY);
-
-			var leaving = theBasis[activeX];
-			if(leaving != activeY){
-				if(leaving >0) paintCol(leaving, "FFFFFF");
-				paintCol(activeY, "DDDDDD");
-				document.theSpreadsheet1[maxCols*(activeX-1) + activeY -1].style="background-color:AAAAAA";
-				theBasis[activeX] = activeY;
-				document.lpstuff[2*activeX -2].value = theLabels[activeY];
+			var leaving = theBasis[theX];
+			if(leaving != theY){
+				if(!condensed){
+         			if(leaving >0) paintCol(leaving, "FFFFFF", 1, maxRows);
+          			/*paintCol(theY, "DDDDDD");
+					  document.theSpreadsheet1[maxCols*(theX-1) + theY -1].style="background-color:AAAAAA";*/
+					 paintPivot(theX, theY); 
+          		}
+				theBasis[theX] = theY;
+				document.lpstuff[2*theX -2].value = theLabels[theY];
 				for(var i = 1; i <= maxRows; i++)//cannot have two pivots in the same column
-					if(theBasis[i] == activeY && i != activeX) {
+					if(theBasis[i] == theY && i != theX) {
 						theBasis[i] = 0;
 						document.lpstuff[2*(i - 1)].value = "";}
+        		if(condensed){
+          			colMap[theY- numRows] = theX;
+					document.labels[theY - numRows] = theLabels[theX];	  
+				}
 			}
 			displayMatrix();
 			document.theSpreadsheet.expr.value = "Done."
@@ -1305,20 +1466,25 @@ function doIt(){
 				}
 			}
 		document.rowops.reset();
+		document.lpstuff.reset();
+		//clear ratios colors
+		for(var i= 1; i<maxRows; i++){
+			document.lpstuff[2*i-1].style="background-color:DDDDDD";
+		}
 		} // end of this option
 	
 	// Option 4 Divide by this
 	else  if (num == 4)
 		{
 		readMatrix();
-		if (theMatrix[activeX][activeY] == 0) 
+		if (theMatrix[theX][theY] == 0)
 			{
 			okToRoll = false;
 			document.theSpreadsheet.expr.value = "You cannot divide by zero."
 			}
 		if (okToRoll)
 			{
-			divideRowbySelection(theMatrix,numRows,numCols,activeX,activeY);
+			divideRowbySelection(theMatrix,numRows,numCols,theX,theY);
 			displayMatrix();
 			} // of okToRoll
 		okToRoll = true;	// reset 
@@ -1436,18 +1602,20 @@ function doIt(){
 		//Options 101 to 100+maxCols Compute Theta Ratios
 	else if (1 <= num - 100  <= maxCols )
 		{
-		var pivcol = num - 100;
+		var pivCol = num - 100;
 		//document.theSpreadsheet.expr.value = "column number " + pivcol.toString();
 		readMatrix();
+		//alert("YO " + numRows);
+		document.theSpreadsheet.expr.value = "numRows = " + numRows;
 		verifyPivots();
+		if(condensed) pivCol += numRows;
 		var minRatio = -1;
 		var ratio;
 		//alert("Ratios for column " +  pivcol + " theBasis: " + theBasis[0] + theBasis[1] + theBasis[3] );
 		for( i = 1; i<= maxRows; i++){
-
 			document.theSpreadsheet.expr.value = i;
 			b = theMatrix[i][numCols];
-			a = theMatrix[i][pivcol];
+			a = theMatrix[i][pivCol];
 			//alert("iteration " + i);
 			if( a > 0 && b >= 0){
 				ratio = b/a;
@@ -1462,17 +1630,20 @@ function doIt(){
 				}
 			else {ratio = "";}
 			document.lpstuff[2*i - 1].value = ratio;
-			}
+		}
 		for( i = 1; i<= maxRows; i++){
 			b = theMatrix[i][numCols];
-			a = theMatrix[i][pivcol];
+			a = theMatrix[i][pivCol];
+			
 			if( a > 0 && b >=0){
+				//if(i >numRows){
+					//alert("row " + i + "a = " + a + "b= " + b);
+				//}
 				ratio = b/a;
 				if(ratio == minRatio) document.lpstuff[2*i -1].style="background-color:FFFFFF";
 				else document.lpstuff[2*i -1].style="background-color:DDDDDD";
 			}
-			else document.lpstuff[2*i -1].style="background-color:DDDDDD";
-			
+			else document.lpstuff[2*i -1].style="background-color:DDDDDD";	
 		}//for
 		}// end of Options 101 to 100+maxCols*/
 

@@ -58,10 +58,10 @@ color: 000000;
 
 <script language="Javascript" src="./Matrix Row Operation Tool_files/pivotscript.js">
 </script>
+<script src="./Matrix Row Operation Tool_files/core.js" language="Javascript"></script>
+<!--<title>Matrix Row Operation Tool</title><meta name="Matrix Gauss Jordan Utility" content="Part of the Finite Math &amp; Applied Calculus resource site at http://www.ohaganbooks.com/StudentSite"></head>
 
-<title>Matrix Row Operation Tool</title><meta name="Matrix Gauss Jordan Utility" content="Part of the Finite Math &amp; Applied Calculus resource site at http://www.ohaganbooks.com/StudentSite"></head>
-
-
+-->
 
 
 
@@ -188,7 +188,7 @@ Mode: <select name="Mode" size="3" noscroll="" onchange="readMatrix(); displayMa
 			<form name="lpbuttons">
 				<table><tbody>
 					<tr>
-						<td nowrap="" align="center"><input type="button" value="Condense" onclick=""><input type="button" value="Show Ratios" onclick="showRatios()"></td>
+						<td nowrap="" align="center"><input type="button" size="8" value="Condense" onclick="onSwitchTableauType()"><input type="button" value="Show Ratios" onclick="showRatios()"></td>
 					</tr>
 				</tbody></table>
 			</form>
@@ -506,7 +506,8 @@ Mode: <select name="Mode" size="3" noscroll="" onchange="readMatrix(); displayMa
 <br>Copyright � 1999 Stefan Waner and Steven R. Costenoble </font>
 </p><p><a href="https://www.zweigmedia.com/RealWorld/tutorialsf1/scriptpivot2.html#top"><font face="arial, helvetica, sans-serif">Top of Page</font></a></p></center>
 
+</center>
+<!-- -- for copying selected cells ---->
+<textarea style="position:fixed;top:0px;left:0px;width:2px;height:2px;padding:0;border:none;color:green;resize:none;overflow:hidden;color:transparent;" id="datapaste"></textarea>
+			
 
-
-
-</center></body></html>
