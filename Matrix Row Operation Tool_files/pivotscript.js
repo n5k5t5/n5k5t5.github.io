@@ -1615,8 +1615,8 @@ function doIt(){
 		//alert("You want to paste from " + x + " , " + y +"?");
 		var theStr = document.theSpreadsheet1[(x-1)*maxCols + y-1].value;
 		//alert("I read the data.");
-		if(theStr.search(/[\r\t]/)==-1) {alert("Bad data");return false;}
-		else {
+		//if(theStr.search(/[\r\t]/)==-1) {alert("Bad data");return false;}
+		//else {
 			// some fixing up for spaces arond signs
 			theStr=theStr.replace(/( )([\+\-\/\*])( )/g,"$2");
 			var rowArr=theStr.split(" ");
@@ -1625,30 +1625,30 @@ function doIt(){
 				var colArr=rowArr[i].split("\t");
 				for (var j=0;j<colArr.length;j++){
 					//alert("So far so good, want to write " + colArr[j]);
-					document.theSpreadsheet.expr.value = colArr[j];
+					//document.theSpreadsheet.expr.value = colArr[j];
 					document.theSpreadsheet1[maxCols*(x+i-1) + y+ j-1].value=colArr[j];
 				}
 			}		
-		}
+		//}
 	}
 	else if(num ==10){//select a submatrix
 		//alert("You want to select a submatrix?");
 		x = activeX;
 		y = activeY;
-		document.theSpreadsheet.expr.value = "selected " + submatrixSelectionStage + " " + x + " " + y;
+		//document.theSpreadsheet.expr.value = "selected " + submatrixSelectionStage + " " + x + " " + y;
 		
 		if(submatrixSelectionStage ==0){
 			submat11 = x;
 			submat12 = y;	
 			document.theSpreadsheet1[(submat11-1)*maxCols + submat12-1].style= "background-color:orange";
 			submatrixSelectionStage = 1;
-			document.theSpreadsheet.expr.value = "Select the other corner and press submatrix again.";
+			document.theSpreadsheet.expr.value = "Select the opposite corner and press Submatrix again.";
 			return;
 		}
 		if(submatrixSelectionStage == 1){
 			submat21 = x;
 			submat22 = y;	
-			document.theSpreadsheet.expr.value = "selected " + submatrixSelectionStage + " " + submat11 + " " + submat12 + " to " + x + " " + y;
+			//document.theSpreadsheet.expr.value = "selected " + submatrixSelectionStage + " " + submat11 + " " + submat12 + " to " + x + " " + y;
 			dataBlock = "";
 			for(var i = submat11; i <= x; i++){
 				for(var j = submat12; j<= y; j++){
@@ -1663,7 +1663,7 @@ function doIt(){
 			}
 			document.getElementById("datapaste").value=dataBlock;
 			document.getElementById("datapaste").select();
-			//document.theSpreadsheet.expr.value = "Press Submatrix to clear";
+			document.theSpreadsheet.expr.value = "Press Ctrl-C to copy and then Submatrix to clear the selection.";
 
 			submatrixSelectionStage = 3;
 			return;
