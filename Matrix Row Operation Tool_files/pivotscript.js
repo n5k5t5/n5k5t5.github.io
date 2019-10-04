@@ -88,7 +88,7 @@ else if ( (browserName == "Microsoft Internet Explorer") && (parseInt(browserVer
 
 // ****************** ERROR HANDLER *************
 function myErrorTrap(message,url,linenumber) {
-alert("I'm sorry, B. I can't do that.");
+alert("I'm sorry. I can't do that.");
 return (true);
 } // end of on error
 
@@ -866,6 +866,28 @@ else if (document.theSpreadsheet.Mode.options[theMode].text == "Integer") intege
 } // readMatrix
 
  // ******* END READ MATRIX *********
+
+
+function copyState(s, t){
+	t.numRows = s.numRows;
+	t.numCols = s.numCols;
+	t.condensed = s.condensed;
+	if(t.theMatrix == undefined)
+		t.theMatrix = new makeArray2(numRows, numCols);
+	
+	for(var i = 1; i <= numRows; i++)
+		for(var j = 1; j <= numCols; j++)
+			t.theMatrix[i][j] = s.theMatrix[i][j];
+	t.theLabels = [];
+	for(i= 1; i <= numCols; i++ )
+		t.theLabels[i] = s.theLabels[i];
+	t.theBasis = [];
+	for(i= 1; i <= numRows; i++ )
+		t.theBasis[i] = s.theBasis[i];
+	t.colMap =  new makeArray(numCols);
+	for(i= 1; i <= maxCols; i++ )
+		t.colMap[i] = s.colMap[i];
+}
 
 // *******BACKUP ******************
 function backUp() {
@@ -1686,14 +1708,14 @@ function doIt(){
 		//document.theSpreadsheet.expr.value = "column number " + pivcol.toString();
 		readMatrix();
 		//alert("YO " + numRows);
-		document.theSpreadsheet.expr.value = "numRows = " + numRows;
+		//document.theSpreadsheet.expr.value = "numRows = " + numRows;
 		verifyPivots();
 		if(condensed) pivCol += numRows;
 		var minRatio = -1;
 		var ratio;
 		//alert("Ratios for column " +  pivcol + " theBasis: " + theBasis[0] + theBasis[1] + theBasis[3] );
 		for( i = 1; i<= maxRows; i++){
-			document.theSpreadsheet.expr.value = i;
+			//document.theSpreadsheet.expr.value = i;
 			b = theMatrix[i][numCols];
 			a = theMatrix[i][pivCol];
 			//alert("iteration " + i);
