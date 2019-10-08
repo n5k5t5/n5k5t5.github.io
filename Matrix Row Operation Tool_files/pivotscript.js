@@ -783,8 +783,8 @@ if(condensed)
      {
        theString = stripSpaces(document.lpstuff[2*(i-1)].value);
        theString = stripChar(theString,",");
-       if( theString == "")
-         { theString = "y"  + i.toString();}
+       //if( theString == "")
+        // { theString = "y"  + i.toString();}
        theRowLabels[i] = theString;
        theLabels[i] = theString;
      }
