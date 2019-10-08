@@ -772,8 +772,8 @@ if(condensed)
 	{ 
 		theString = stripSpaces(document.labels[j-1].value);
 		theString = stripChar(theString,",");
-		if( theString == "")
-			{ theString = "x" + j.toString();}
+		//if( theString == "")
+		//	{ theString = "x" + j.toString();}
 		theLabels[colMap[j]] = theString;
 	}
 // read variable labels from the rows if condensed
