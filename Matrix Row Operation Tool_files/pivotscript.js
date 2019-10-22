@@ -515,9 +515,9 @@ for (var i = 1; i <= cols; i++)
 	InMatrix[theRow][i] = InMatrix[theRow][i]/thePivot;
 	} // i
 	// undo information follows
-	stackPtr++;
-	if(stackPtr == 101) stackPtr = 1;
-	operationsStack[stackPtr] = "1,"+theRow.toString() + ","+thePivot.toString() 	
+stackPtr++;
+if(stackPtr == 101) stackPtr = 1;
+operationsStack[stackPtr] = "1,"+theRow.toString() + ","+thePivot.toString() 	
 	// starts with 1 to mark the first step in a sequence
 // now pivot
 var theNum = 1;
@@ -534,10 +534,10 @@ for (var i = 1; i <= rows; i++)
 
 			} // j
 			// undo information follows
-			stackPtr++;
-			if(stackPtr == 101) stackPtr = 1;
+		stackPtr++;
+		if(stackPtr == 101) stackPtr = 1;
 
-			operationsStack[stackPtr] = "0," + i + ",1,+," + theRow + "," + factr.toString();
+		operationsStack[stackPtr] = "0," + i + ",1,+," + theRow + "," + factr.toString();
 			// starts with 0 to mark subsequent steps in a sequence
 		}
 	} // i
