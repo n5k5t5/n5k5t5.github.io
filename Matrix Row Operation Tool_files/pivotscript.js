@@ -17,7 +17,7 @@ var activeY = 1;
 var theX;
 var theY;
 var prevX = 0;			// previously active cell
-varPrevY = 0;
+var PrevY = 0;
 var comma = ",";
 var singular = false;
 var maxRows = 15;
