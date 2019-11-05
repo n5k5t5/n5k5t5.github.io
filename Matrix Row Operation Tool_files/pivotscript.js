@@ -545,7 +545,6 @@ for (var i = 1; i <= rows; i++)
 
 return(InMatrix);
 }
-
 // ***************** END PIVOT *********************
 
 // *************DIVIDE ROW BY SELECTION ************
@@ -770,8 +769,9 @@ if(condensed)
 // read variable labels from the column headers
  for (var j = 1; j<= theColSize; j++)
 	{ 
-		theString = stripSpaces(document.labels[j-1].value);
-		theString = stripChar(theString,",");
+		//theString = stripSpaces(document.labels[j-1].value);
+		theString = document.labels[j-1].value.trim();
+		//theString = stripChar(theString,",");
 		//if( theString == "")
 		//	{ theString = "x" + j.toString();}
 		theLabels[colMap[j]] = theString;
@@ -781,8 +781,9 @@ if(condensed)
  {// read variable labels from the rows if condensed
     for (var i = 1; i<= theRowSize; i++)
      {
-       theString = stripSpaces(document.lpstuff[2*(i-1)].value);
-       theString = stripChar(theString,",");
+	   //theString = stripSpaces(document.lpstuff[2*(i-1)].value);
+	   theString = document.lpstuff[2*(i-1)].value.trim();
+       //theString = stripChar(theString,",");
        //if( theString == "")
         // { theString = "y"  + i.toString();}
        theRowLabels[i] = theString;
@@ -1347,7 +1348,7 @@ theResult[4] = coeff2;
 // end debug
 return(theResult);
 
-	} // parseRowOp
+} // parseRowOp
 
 function paintCol(colnum, color, t, b){ //from t down to b
 	var count = maxCols*(t-1) +  colnum - 1
