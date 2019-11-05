@@ -140,7 +140,7 @@ function drawSpreadsheet(){
         //inp.setAttribute("onblur", "doOnBlur(this," + i + ", " + j + ")");
         //inp.setAttribute("onfocus","checkin(0, " + j + ")");
         inp.setAttribute("onkeydown", "blink(this, 0, " + j + ")");
-        inp.setAttribute("ondblclick", "doOnDblClick(this, 0, " + j + ")");
+        inp.setAttribute("ondblclick", "doItBaby(" + (98 + j) + ");");
         var c = document.createElement("td");
         c.appendChild(inp);
         r.appendChild(c)
@@ -264,11 +264,12 @@ function blink(e, x, y){
     if((event.key === "Enter" || e.value == "") && e.readOnly){
         //clearCell = false;
         //enter2enter = false;
-        toDo.heap[(x-1)*maxCols+ y-2] += 1;
+        toDo.heap[(x-1)*maxCols+ y-2] = e.value;
         toDo.count +=1;
         e.readOnly = false;
         if(e.value != ""){
             e.value = numberToString(the.matrix[x-1][y-2], mode);
+            out.value = e.value;
         };
         enter2enter = false;
         var s = e.getAttribute("style");
@@ -318,13 +319,20 @@ function doOnBlur(cell, x,y ){
     if(num != ""){
         say(num);
         num = modes[mode].str2num(num);
-        say("calling fillOut(" + (x-1) + " , " + (y-2) + " )");
-        fillOut(the, x-1, y-2, num);
-        getcell(x,y).value = numberView(num, mode);
+        if(num == undefined){
+            alert("I don't understand this number"); 
+            if(toDo.heap[(x-1)*maxCols+y-2] =="")
+                getcell(x,y).value = "";
+            else getcell(x,y).value = numberView(the.matrix[x-1][y-2], mode);
+        }
+        else{
+            say("calling fillOut(" + (x-1) + " , " + (y-2) + " )");
+            fillOut(the, x-1, y-2, num);
+            getcell(x,y).value = numberView(num, mode);
+        }
     }
-    //if(cell.value != "") 
     cell.readOnly = true;
-    delete toDo.heap[(x-1)*maxCols+y-2] ;
+    delete toDo.heap[(x-1)*maxCols+y-2];
     toDo.count -= 1;
     if(toDo.count == 0 && toDo.queue != undefined){
         apply(toDo.queue[0], toDo.queue[1]);
@@ -735,7 +743,7 @@ function doItBaby(){
     var x = doItBaby.arguments[1];
     var y = doItBaby.arguments[2];
     var arith = modes[mode];//the number system
-    say("doItBaby: " + action + " at " + x + " " + y);
+    say("doItBaby: " + (action-100));
     if(action=="pivot"){
         var okToRoll = true;
         readMatrixBaby();
@@ -856,73 +864,105 @@ function doItBaby(){
         
     }
     //Options 101 to 100+maxCols Compute Theta Ratios
-    else if (1 <= action - 100  <= maxCols )
+    else if (100 <= action   &&  action < 100 + maxCols )
         {
         var gr = arith.greater;
         var pivCol = the.colMap[action - 100];
-        //document.theSpreadsheet.expr.value = "column number " + pivcol.toString();
-        readMatrix();
-        //alert("YO " + numRows);
+        //alert("showing ratios in column number " + pivCol.toString() );
+        //readMatrix();
         //document.theSpreadsheet.expr.value = "numRows = " + numRows;
         verifyPivots();
+        //alert("YO " + the.numRows);
         //if(condensed) pivCol += the.numRows;
-        var minRatio = -1;
+        var minRatio = -1;//-1
         var ratio;
         //alert("Ratios for column " +  pivcol + " theBasis: " + theBasis[0] + theBasis[1] + theBasis[3] );
-        for( i = 0; i< maxRows; i++){
+        for( i = 0; i< the.numRows; i++){
             //document.theSpreadsheet.expr.value = i;
             b = the.matrix[i][the.numCols-1];
             a = the.matrix[i][pivCol];
             //alert("iteration " + i);
-            if( gr(a,0) && gr(b,0)){
+            if( gr(a,arith.zero) && (gr(b,arith.zero) || arith.isNil(b))){
                 ratio =arith.div(b,a);
                 //alert("a, b, ratio = " + a + b + ratio);
                 if(minRatio == -1) {minRatio = ratio;
                 //alert("a, b, ratio, min = " + a + b + ratio + minRatio);
                 }
                 else { //alert("about to modify minRatio. ratio, minRatio = " + ratio + " " + minRatio);
-                    if(gr(minRatio,ratio )) minRatio = ratio;
+                    if(gr(minRatio,ratio )) minRatio = arith.mul(ratio, arith.one);
                     //alert("...modified");
                     }
                 }
             else {ratio = "";}
-            getcell(i, 1).value = arith.float(ratio);
+            getcell(1+ i, 1).value = (ratio == ""? "":arith.float(ratio));
         }
-        for( i = 0; i< maxRows; i++){
-            b = the.matrix[i][numCols];
+        //alert("minRatio = " + minRatio);
+        for( i = 0; i< the.numRows; i++){
+            b = the.matrix[i][the.numCols-1];
             a = the.matrix[i][pivCol];
             
-            if( a > 0 && b >=0){
+            if( gr(a,arith.zero) && (gr(b,arith.zero) || arith.isNil(b))){
                 //if(i >numRows){
-                    //alert("row " + i + "a = " + a + "b= " + b);
+                //alert("row " + i + "a = " + a + "b= " + b);
                 //}
                 ratio = arith.div(b,a);
-                getcell(1+i, 1).style= "background-color:" + (arith.equal(ratio, minRatio))? "FFFFFF":"DDDDDD";
+                //alert("ratio=" + ratio);
+                getcell(1+i, 1).style.backgroundColor = (arith.equal(ratio, minRatio))? "#FFFFFF":"#DDDDDD";
             }
-            else getcell(1+i, 1).style="background-color:DDDDDD";	
+            else getcell(1+i, 1).style.backgroundColor="#DDDDDD";	
         }//for
-        }// end of Options 101 to 100+maxCols*/
+        toDo.queue = undefined;
+    }// end of Options 101 to 100+maxCols*/
 
 }
 
 
 function stringToNumber(s, mode){
-    s = s.replace(/\s/g, "").replace(/,/g, "");
-    if(mode == decimals){ return eval(s);}
-    
-    if(mode == fractions){
-        frac = s.split("/");
-        if(frac.length >2){
-            say("I don't understand this expression");
-            return undefined;
-        }
-        else if(frac.length == 2) {
-            return [eval(frac[0]), eval(frac[1])];
-        }
-        else{
-            return [eval(frac[0]), 1];
+    try{
+        s = s.replace(/\s/g, "").replace(/,/g, "");
+        if(mode == decimals){ 
+            s = eval(s);
+            if(isNaN(s)) return undefined;
+            return s;}
+        
+        if(mode == fractions){
+            frac = s.split("/");
+            if(frac.length >2){
+                say("I don't understand this expression");
+                return undefined;
+            }
+            else if(frac.length == 2) {
+                var numer = eval(frac[0]);
+                var denom = eval(frac[1]);
+                if(! Number.isInteger(numer) || !Number.isInteger(denom) || denom == 0) return undefined;
+                else{
+                    if(denom <0){
+                        denom *= -1;
+                        numer *= -1;
+                    }
+                    return  fracRed([numer, denom]);
+                }
+            }
+            else{//frac has one entry
+                var str = frac[0];
+                var int_dec = str.split(".");
+                if(int_dec.length == 2){
+                    if( int_dec[0].match(/^[\+\-]?[0-9]*$/) != null && int_dec[1].match(/^[0-9]*$/) != null){
+                        return fracRed( [eval(int_dec[0]+ int_dec[1]), 10**(int_dec[1].length)]);
+                    }
+                }
+                var numer = eval(str);
+                if(isNaN(numer)){return undefined;}
+                var i = 0;
+                while(!Number.isInteger(numer)){
+                    numer *= 10;
+                    i +=1;
+                }
+                return fracRed([numer,10**i]); 
+            }       
         }
     }
+    catch {return undefined;}
 }
 
 function numberToString(n, mode){
