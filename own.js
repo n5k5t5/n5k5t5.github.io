@@ -77,6 +77,8 @@ function max(x,y){
 };
 function debug_me(s){if(debug) alert(s);}
 
+//Convention:  the reference point for all coordinates within the grid is the most upper-left cell that can store a coefficient.
+//This point has coordinates (0,0).  The firs coordinate grows as one moves down the spreadsheet and the second grows as one moves to the right in the spreadsheet.
 /****************** ERROR HANDLER *************/
 function myErrorTrap(message,url,linenumber) {
     alert("I can't do that.  Line " + linenumber + ": " + message);
@@ -129,28 +131,28 @@ function drawSpreadsheet(){
     var t = sheet;
     var r= t.lastElementChild.lastElementChild;
     //draw the header row -------------------------------------------------------------------------
-    var i = 0;
-    for(var j = 2; j < maxCols + 2; j++ ){
+    var i = -1;
+    for(var j = 0; j < maxCols; j++ ){
         var inp = document.createElement("input");
         inp.setAttribute("type", "text");
-        inp.setAttribute("id", "cell 0 " + j);
+        inp.setAttribute("id", "cell -1 " + j);
         inp.setAttribute("size", "10");
         inp.setAttribute("style","background-color:white; border-color:gray" );
       //inp.setAttribute("oninput", "alert(\"entering somn?\");");
-        inp.setAttribute("onchange", "doOnChange(this, 0," + j + ")");
+        inp.setAttribute("onchange", "doOnChange(this, -1," + j + ")");
         //inp.setAttribute("onblur", "doOnBlur(this," + i + ", " + j + ")");
         //inp.setAttribute("onfocus","checkin(0, " + j + ")");
-        inp.setAttribute("onkeydown", "blink(this, 0, " + j + ")");
-        inp.setAttribute("ondblclick", "doItBaby(" + (98 + j) + ");");
+        inp.setAttribute("onkeydown", "blink(this, -1, " + j + ")");
+        inp.setAttribute("ondblclick", "doItBaby(" + (100 + j) + ");");//show ratios
         var c = document.createElement("td");
         c.appendChild(inp);
         r.appendChild(c)
     }
   //Draw the rest-------------------------------------------------------------------------
-    for(var i = 1; i <= maxRows; i++ ){
+    for(var i = 0; i < maxRows; i++ ){
         r = document.createElement("tr");
         //var rowHtml = "<td><input type=\"text\" style= \"background-color:white ; border-color:gray\"  id = "+ i.toString() + " " + j.toString() + " onkeydown=\"blink(this)\"></td>"
-        j = 0;
+        j = -2;
 //create first entry in a row-----------------------------------
         c = document.createElement("td");
         var inp = document.createElement("input");
@@ -169,7 +171,7 @@ function drawSpreadsheet(){
         r.appendChild(c);
 
 //create second entry-----------------------------
-        j = 1;
+        j = -1;
         c = document.createElement("td");
         inp = document.createElement("input");
         inp.setAttribute("type", "text");
@@ -183,7 +185,7 @@ function drawSpreadsheet(){
         c.appendChild(inp);
         r.appendChild(c);
 //create the rest of entries
-        for(j = 2; j < maxCols + 2; j++){
+        for(j = 0; j < maxCols; j++){
             c = document.createElement("td");
             inp = document.createElement("input");
             inp.setAttribute("type", "text");
@@ -221,7 +223,7 @@ function say(s){
     out.scrollTop = out.scrollHeight;
 }
 function getcell(i,j){
-    return sheetForm[i*(maxCols+2) + j];
+    return sheetForm[(1+i)*(maxCols+2) + 2+j];
 }
 
 
@@ -260,16 +262,16 @@ function checkin(row, col){
 
 
 function blink(e, x, y){
-    if(x == 0 || y <2) return;
+    if(x == -1 || y <0) return;
     if(toDo.queue != undefined) return;
     if((event.key === "Enter" || e.value == "") && e.readOnly){
         //clearCell = false;
         //enter2enter = false;
-        toDo.heap[(x-1)*maxCols+ y-2] = e.value;
+        toDo.heap[x*maxCols+ y] = e.value;
         toDo.count +=1;
         e.readOnly = false;
         if(e.value != ""){
-            e.value = numberToString(the.matrix[x-1][the.colMap[y-2]], mode);
+            e.value = numberToString(the.matrix[x][the.colMap[y]], mode);
             out.value = e.value;
         };
         enter2enter = false;
@@ -300,7 +302,7 @@ function doOnEnter(x,y, value){
 }
 function doOnDblClick(cell, x, y){
     say("double click at  " + x + " " + y);
-    if (x>0 && y>1){
+    if (x>=0 && y>=0){
         doOnBlur(cell, x,y);
         doItBaby("pivot", x, y);
     }
@@ -320,20 +322,20 @@ function doOnBlur(cell, x,y ){
     if(num != ""){
         say(num);
         num = modes[mode].str2num(num);
-        if(num == undefined){
+        if(num == undefined){ //input failed to parse into a number
             alert("I don't understand this number"); 
-            if(toDo.heap[(x-1)*maxCols+y-2] =="")
+            if(toDo.heap[x*maxCols+y] =="") //the value previously displayed
                 getcell(x,y).value = "";
-            else getcell(x,y).value = numberView(the.matrix[x-1][y-2], mode);
+            else getcell(x,y).value = numberView(the.matrix[x][y], mode);
         }
         else{
-            say("calling fillOut(the" + (x-1) + " , " + (y-2) + ", " + num + " )");
-            fillOut(the, x-1, y-2, num);
+            say("calling fillOut(the, " + x + " , " + y + ", " + num + " )");
+            fillOut(the, x, y, num);
             getcell(x,y).value = numberView(num, mode);
         }
     }
     cell.readOnly = true;
-    delete toDo.heap[(x-1)*maxCols+y-2];
+    delete toDo.heap[x*maxCols+y];
     toDo.count -= 1;
     if(toDo.count == 0 && toDo.queue != undefined){
         apply(toDo.queue[0], toDo.queue[1]);
@@ -352,16 +354,16 @@ function doOnChange(cell,x,y){
     var label = cell.value.trim();
     say("x, y, trimmed value= " + x + ",  "  + y + ",  " + label);
     if(condensed){
-        if(x ==0 && y>=2 && y < the.numCols-the.numRows+2){
-          y -= 2; //index in the atrix
+        if(x ==-1 && y>=0 && y < the.numCols-the.numRows){
+          //y -= 2; //index in the matrix
           the.labels[colMap[y]] = label;
         }
-        else if(y == 0 && x >0 && x<the.numRows+1){//row label
-         the.labels[the.pivots[x-1]] = label;
+        else if(y == -2 && x >=0 && x<the.numRows){//row label
+         the.labels[the.pivots[x]] = label;
         }
     }
-    else if(x == 0 && y>=2 && y < the.numCols+2){
-        y -= 2; //index in the atrix
+    else if(x == -1 && y>=0 && y < the.numCols){//col label
+        //y -= 2; //index in the matrix
         the.labels[the.colMap[y]] = label;
     }
     mathRoomKey = true;
@@ -739,7 +741,7 @@ function changeView(v){
 // } // end of doIt
 
 function doItBaby(){
-    if(toDo.queue != undefined)return;
+    if(toDo.queue != undefined) return;
     if(toDo.count == 0) toDo.queue = "running";
     if(toDo.count > 0) {toDo.queue = [doItBaby, doItBaby.arguments]; return;}
     var action = doItBaby.arguments[0];
@@ -752,13 +754,13 @@ function doItBaby(){
         var okToRoll = true;
         readMatrixBaby();
         //use indexing appropriate for matrix
-        x -=1;
+        //x -=1;
         var displayed_y = y;
-        if(x>= the.numRows || displayed_y -2 >= the.numCols - (condensed? (the.numRows):0) ){
+        if(x>= the.numRows || displayed_y >= the.numCols - (condensed? (the.numRows):0) ){
             okToRoll = false;
         }
         else {
-            var entering = the.colMap[y-2];//actual matrix column index
+            var entering = the.colMap[y];//actual matrix column index
             //alert("doItBaby: " + action + " at " + x + " " + y);
             if(arith.isNil(the.matrix[x][entering])){
                 okToRoll= false;
@@ -777,22 +779,22 @@ function doItBaby(){
             if(leaving != entering){
                 if(!condensed){
                     //alert("leaving= " + leaving);
-                    if(leaving != undefined) paintCol(2+the.colMapInv[leaving], "#FFFFFF", 1, maxRows);
+                    if(leaving != undefined) paintCol(the.colMapInv[leaving], "#FFFFFF", 0, maxRows-1);
                     /*paintCol(theY, "DDDDDD");
                     document.theSpreadsheet1[maxCols*(theX-1) + theY -1].style="background-color:AAAAAA";*/
                     //alert("about to paintPivot: x = " + x + ", entering = " + entering + ", visible y = " + the.colMapInv[entering]);
                     paintPivot(x, the.colMapInv[entering]); 
                 }
                 the.pivots[x] = entering;
-                getcell(1+x, 0).value = the.labels[entering];
+                getcell(x, -2).value = the.labels[entering];
                 for(var i = 0; i < maxRows; i++)//cannot have two pivots in the same column--seems redundant
                     if(the.pivots[i] == entering && i != x) {
                         the.pivots[i] = undefined;
-                        getcell(1+i,0).value = "";}
+                        getcell(i,-2).value = "";}
                 if(condensed){
-                    the.colMap[displayed_y-2] = leaving;
-                    the.colMapInv[leaving] = displayed_y-2;
-                    getcell(0,displayed_y).value =  the.labels[leaving];	  
+                    the.colMap[displayed_y] = leaving;
+                    the.colMapInv[leaving] = displayed_y;
+                    getcell(-1,displayed_y).value =  the.labels[leaving];	  
                 }
             }
             say("displaying matrix");
@@ -889,7 +891,7 @@ function doItBaby(){
             a = the.matrix[i][pivCol];
             //alert("iteration " + i);
             if( gr(a,arith.zero()) && (gr(b,arith.zero()) || arith.isNil(b))){
-                ratio =arith.div(b,a);
+                ratio = arith.div(b,a);
                 //alert("a, b, ratio = " + a + b + ratio);
                 if(minRatio == -1) {minRatio = ratio;
                 //alert("a, b, ratio, min = " + a + b + ratio + minRatio);
@@ -900,7 +902,7 @@ function doItBaby(){
                     }
                 }
             else {ratio = "";}
-            getcell(1+ i, 1).value = (ratio == ""? "":arith.float(ratio));
+            getcell(i, -1).value = (ratio == ""? "":arith.float(ratio));
         }
         //alert("minRatio = " + minRatio);
         for( i = 0; i< the.numRows; i++){
@@ -913,9 +915,9 @@ function doItBaby(){
                 //}
                 ratio = arith.div(b,a);
                 //alert("ratio=" + ratio);
-                getcell(1+i, 1).style.backgroundColor = (arith.equal(ratio, minRatio))? "#FFFFFF":"#DDDDDD";
+                getcell(i, -1).style.backgroundColor = (arith.equal(ratio, minRatio))? "#FFFFFF":"#DDDDDD";
             }
-            else getcell(1+i, 1).style.backgroundColor="#DDDDDD";	
+            else getcell(i, -1).style.backgroundColor="#DDDDDD";	
         }//for
         toDo.queue = undefined;
     }// end of Options 101 to 100+maxCols*/
@@ -1040,17 +1042,17 @@ function fillOut(s, x, y, z){
         s.colMapInv[j] = j-cnew_m;
     }
     mat[x][s.colMap[y]] = z;
-    getcell(1+x, 2+y).value = modes[mode].num2str(z);
+    getcell(x, y).value = modes[mode].num2str(z);
     s.numRows = new_m;
     s.numCols =  new_n;
    
     //now read labels
     for(j = n-c*m; j<= y; j++){
-        the.labels[the.colMap[j]] = getcell(0, 2+j).value.trim();
+        the.labels[the.colMap[j]] = getcell(-1, j).value.trim();
     }
     if(condensed){
         for(i = m; i <=x; i++){
-            the.labels[the.pivots[i]] = getcell(1+i,0).value.trim();
+            the.labels[the.pivots[i]] = getcell(i,-2).value.trim();
         }
     }
     
@@ -1229,7 +1231,7 @@ function readMatrixBaby(){
 
 
 function paintCol(colnum, color, t, b){ //from t down to b
-    say("painting column " + (colnum - 2) + " from " + (t-1) + " to " + (b-1));
+    say("painting column " + colnum + " from " + t + " to " + b);
     for(var i = t; i <= b; i++){
         getcell(i,colnum).style.backgroundColor = color;
     }
@@ -1238,9 +1240,9 @@ function paintCol(colnum, color, t, b){ //from t down to b
 function paintPivot(r, c){
     say("painting pivot " + r + ", " + c);
     for(var i = 0; i < the.numRows; i++){
-        getcell(1+i,2+c).style.backgroundColor = "#DDDDDD";
+        getcell(i,c).style.backgroundColor = "#DDDDDD";
     }	
-    getcell(1+ r,2+c).style.backgroundColor =  "#AAAAAA";
+    getcell(r,c).style.backgroundColor =  "#AAAAAA";
 }
     
 // ****** DISPLAY CURRENT MATRIX ****
@@ -1268,7 +1270,7 @@ function displayMatrix() {
     //write column labels
 	    for(var i = 0; i < numDisplayedCols; i++){
             //debug_me(i + " " + the.labels +  " .... " + the.colMap);
-		    getcell(0,2+ i).value = the.labels[the.colMap[i]];
+		    getcell(-1,i).value = the.labels[the.colMap[i]];
 	    }
     }
 	var x = "";  // a string
@@ -1293,7 +1295,7 @@ function displayMatrix() {
 	    	{
 		    for (var j= 0; j <  numDisplayedCols; j++) 		
 		    	{
-		    	getcell(1+i,2+j).value = numberView(the.matrix[i][the.colMap[j]], mode);
+		    	getcell(i,j).value = numberView(the.matrix[i][the.colMap[j]], mode);
 		    	} // if ok
 		    } // j 
 		
@@ -1303,9 +1305,9 @@ function displayMatrix() {
 //doNotReduce = true;		// turns off automatic reduction
 
 //clear ratios
-for(var i = 1; i< 1+ the.numRows; i++){
-	getcell(i, 1).value = "";
-	getcell(i, 1).style = "background-color:#DDDDDD";
+for(var i = 0; i< the.numRows; i++){
+	getcell(i, -1).value = "";
+	getcell(i, -1).style = "background-color:#DDDDDD";
     }
 say("Finished displaying Matrix");
 return(0);
@@ -1329,7 +1331,7 @@ function verifyPivots(){
                 
             }*/
             say("no pivot claimed in row " + i );
-            getcell(1+i, 0).value = ""; //no pivot label should be here;
+            getcell(i, -2).value = ""; //no pivot label should be here;
             continue;
         }
         say("there is a claimed pivot at" + i + ", " + pivotCol);
@@ -1339,20 +1341,21 @@ function verifyPivots(){
 				if (i != j &&   !arith.isNil(the.matrix[j][pivotCol]) ) {ok = false; break;}
 			}
             else ok = false;
-		if(ok){say("the column is pivoted as expected");
+		if(ok){
+            say("the column is pivoted as expected");
 			if(!condensed) {
 				paintPivot(i, the.colMapInv[pivotCol] );
-				paintCol(2+the.colMapInv[pivotCol], "#FFFFFF", 1+ the.numRows, 1+ maxRows - 1);
+				paintCol(the.colMapInv[pivotCol], "#FFFFFF", the.numRows, maxRows - 1);
 			}
-			getcell(1+i,0).value = the.labels[pivotCol];
+			getcell(i,-2).value = the.labels[pivotCol];
 		}
         else {//remove pivot 
             say("the column is NOT pivoted as expected");
 			the.pivots[i] = undefined;
 			if(!condensed){
-			  paintCol(2+the.colMapInv[pivotCol], "#FFFFFF", 1, 1+ maxRows - 1);
+			  paintCol(the.colMapInv[pivotCol], "#FFFFFF", 0, maxRows - 1);
 			}
-			getcell(1+i, 0).value = "";
+			getcell(i, -2).value = "";
 	    	
         }
     }//for
@@ -1396,7 +1399,7 @@ function switchTableauType(){
         
         //write column labels
 		for(i  = 0; i < the.numCols; i++) {
-			getcell(0, 2+i).value = the.labels[the.colMap[i]];
+			getcell(-1, i).value = the.labels[the.colMap[i]];
         }
 		//paint pivots
         for(var i = 0; i<the.numRows; i++) paintPivot(i, the.colMapInv[the.pivots[i]]);	
@@ -1410,14 +1413,14 @@ function switchTableauType(){
 			var k = 0;
 			for(var j = 0; j < the.numCols; j++){
 				//erase column labels
-				getcell(0, 2+j).value = "";
+				getcell(-1, j).value = "";
                 var pivoted = false;
                 
 				for(var i = 0; i<the.numRows; i++){
                     //debug_me("washing " + [i,j]);
-					getcell(1+i, 2+j).style="background-color:#FFFFFF";
+					getcell(i, j).style = "background-color:#FFFFFF";
 					if(j>=the.numCols-the.numRows)
-                        getcell(1+i, 2+j).value = "";
+                        getcell(i, j).value = "";
 					if(the.pivots[i] == j) {
 						pivoted = true;
 					}
