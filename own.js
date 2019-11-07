@@ -356,7 +356,7 @@ function doOnChange(cell,x,y){
     if(condensed){
         if(x ==-1 && y>=0 && y < the.numCols-the.numRows){
           //y -= 2; //index in the matrix
-          the.labels[colMap[y]] = label;
+          the.labels[the.colMap[y]] = label;
         }
         else if(y == -2 && x >=0 && x<the.numRows){//row label
          the.labels[the.pivots[x]] = label;
@@ -876,7 +876,8 @@ function doItBaby(){
         {
         var gr = arith.greater;
         var pivCol = the.colMap[action - 100];
-        //alert("showing ratios in column number " + pivCol.toString() );
+        var constCol = the.colMap[the.numCols - (condensed?the.numRows:0) - 1];
+        //alert("action = " + action + ". Showing ratios in column number " + pivCol );
         //readMatrix();
         //document.theSpreadsheet.expr.value = "numRows = " + numRows;
         verifyPivots();
@@ -887,7 +888,7 @@ function doItBaby(){
         //alert("Ratios for column " +  pivcol + " theBasis: " + theBasis[0] + theBasis[1] + theBasis[3] );
         for( i = 0; i< the.numRows; i++){
             //document.theSpreadsheet.expr.value = i;
-            b = the.matrix[i][the.numCols-1];
+            b = the.matrix[i][constCol];
             a = the.matrix[i][pivCol];
             //alert("iteration " + i);
             if( gr(a,arith.zero()) && (gr(b,arith.zero()) || arith.isNil(b))){
@@ -906,7 +907,7 @@ function doItBaby(){
         }
         //alert("minRatio = " + minRatio);
         for( i = 0; i< the.numRows; i++){
-            b = the.matrix[i][the.numCols-1];
+            b = the.matrix[i][constCol];
             a = the.matrix[i][pivCol];
             
             if( gr(a,arith.zero()) && (gr(b,arith.zero()) || arith.isNil(b))){
