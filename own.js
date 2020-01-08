@@ -10,7 +10,9 @@ var mathRoomKey = false;
 var dataBlock= ""; // for copying data
 const decimals = 1;
 const fractions = 2;
+const bigfracs  = 3;
 var modes = [];
+
 modes[decimals] = 
                         { sub:  (a,b)=> a-b, 
                           div: (a,b)=> a/b, 
@@ -34,21 +36,41 @@ modes[fractions] =
                           piv: fracPivotMatrix,
                           str2num :(s) => stringToNumber(s, fractions),
                           num2str: (n) =>  numberToString(n, fractions),
-                          greater: (n,m) => (n[0]*m[1] > n[1]*m[0]),
+                          greater: (n, m) => (n[0]*m[1] > n[1]*m[0]),
                           float: (n) => n[0]/n[1],
-                          equal: (n,m) => (n[0]*m[1] == n[1]*m[0]),
+                          equal: (n,m) => (n[0]== m[0] && n[1] == m[1]),
                           zero: ()=>[0,1],
                           one: () => [1,1]
                         };
                     
+modes[bigfracs] =                          
+                      { sub: fracSub,
+                        div: fracDiv,
+                        mul: fracMul,
+                        isNil: (a) =>a[0] == 0,
+                        piv: (mat, rows, cols, row, col) => uniPivotMatrix(mat, rows, cols, row, col, 
+                            {   sub: fracSub, 
+                                div: fracDiv, 
+                                mul: fracMul,
+                                isNil: (a) => a[0] == 0,
+                                }),
+                        str2num :(s) => stringToNumber(s, bigfracs),
+                        num2str: (n) =>  numberToString(n, bigfracs),
+                        greater: (n,m) => (n[0]*m[1] > n[1]*m[0]),
+                        float: (n) => Number((n[0]*10n**6n)/n[1])/10**6,
+                        equal: (n,m) => (n[0]== m[0] && n[1] == m[1]),
+                        zero: ()=>[0n,1n],
+                        one: () => [1n,1n]
+                        };              
+                                            
 var modeBtn;
 var mode;
 var view = fractions;
 //var tableauType = "condensed";
-var condensed = false;
+var condensed = true;
 //used in the excel-like feature that when you start entering into a cell, the cell's contents clear
 var clearCell = false;
-var enter2enter = false;
+//var enter2enter = false;
 var the = { numRows: 0, numCols: 0, matrix: [], colMap:[], colMapInv:[], pivots: [], mode: fractions, condensed: false, view: decimals , labels : []};
 //numRows
 //numCols
@@ -71,12 +93,12 @@ var submat22 =0;
 var doPivot= {decimals: pivotMatrix, fractions: fracPivotMatrix};
 var thereAreWritableEntires  = true;
 var toDo = { count : 0, queue: undefined, heap: {}};//keeping tracks of callbacks
-
+var pastingStage = 0;
+var pasteRegion = { x: 0, y: 0, rowLengths:[]};
 function max(x,y){
     return x>y? x:y;
 };
 function debug_me(s){if(debug) alert(s);}
-
 //Convention:  the reference point for all coordinates within the grid is the most upper-left cell that can store a coefficient.
 //This point has coordinates (0,0).  The firs coordinate grows as one moves down the spreadsheet and the second grows as one moves to the right in the spreadsheet.
 /****************** ERROR HANDLER *************/
@@ -140,9 +162,9 @@ function drawSpreadsheet(){
         inp.setAttribute("style","background-color:white; border-color:gray" );
       //inp.setAttribute("oninput", "alert(\"entering somn?\");");
         inp.setAttribute("onchange", "doOnChange(this, -1," + j + ")");
-        //inp.setAttribute("onblur", "doOnBlur(this," + i + ", " + j + ")");
-        //inp.setAttribute("onfocus","checkin(0, " + j + ")");
-        inp.setAttribute("onkeydown", "blink(this, -1, " + j + ")");
+        inp.setAttribute("onblur", "doOnBlur(this," + i + ", " + j + ")");
+        inp.setAttribute("onfocus","checkin(-1, " + j + ")");
+        inp.setAttribute("onkeydown", "doOnKeyDown(this, -1, " + j + ")");
         inp.setAttribute("ondblclick", "doItBaby(" + (100 + j) + ");");//show ratios
         var c = document.createElement("td");
         c.appendChild(inp);
@@ -151,7 +173,7 @@ function drawSpreadsheet(){
   //Draw the rest-------------------------------------------------------------------------
     for(var i = 0; i < maxRows; i++ ){
         r = document.createElement("tr");
-        //var rowHtml = "<td><input type=\"text\" style= \"background-color:white ; border-color:gray\"  id = "+ i.toString() + " " + j.toString() + " onkeydown=\"blink(this)\"></td>"
+        //var rowHtml = "<td><input type=\"text\" style= \"background-color:white ; border-color:gray\"  id = "+ i.toString() + " " + j.toString() + " onkeydown=\"doOnKeyDown(this)\"></td>"
         j = -2;
 //create first entry in a row-----------------------------------
         c = document.createElement("td");
@@ -160,12 +182,12 @@ function drawSpreadsheet(){
         inp.setAttribute("id", "cell " + i + " " + j );
         inp.setAttribute("size", "10");
         inp.setAttribute("style", "background-color:white; border-color:gray");
-        //inp.setAttribute("onfocus","checkin("+i + "," + j+")");
-        inp.setAttribute("onkeydown" , "blink(this, " + i + ", " + j + ")");   
+        inp.setAttribute("onfocus","checkin(" +i + "," + j+")");
+        inp.setAttribute("onkeydown" , "doOnKeyDown(this, " + i + ", " + j + ")");   
         //inp.setAttribute("ondblclick","doOnDblClick(this, " +i + "," + j+")");
       //inp.setAttribute("oninput", "alert(\"entering somn?\");");
         inp.setAttribute("onchange", "doOnChange(this," + i + ", " + j + ")");
-        //inp.setAttribute("onblur", "doOnBlur(this," + i + ", " + j + ")");
+        inp.setAttribute("onblur", "doOnBlur(this," + i + ", " + j + ")");
 
         c.appendChild(inp);
         r.appendChild(c);
@@ -180,7 +202,7 @@ function drawSpreadsheet(){
 
         inp.setAttribute("style", "background-color:#DDDDDD;");
         inp.setAttribute("readonly" , true);
-      //inp.setAttribute("onkeydown" , "blink(this)");
+      //inp.setAttribute("onkeydown" , "doOnKeyDown(this)");
 
         c.appendChild(inp);
         r.appendChild(c);
@@ -196,10 +218,10 @@ function drawSpreadsheet(){
             //inp.readOnly = true;
             inp.setAttribute("readonly" , true);
             inp.setAttribute("onfocus","checkin("+i + "," + j+")");
-            inp.setAttribute("onkeydown" , "blink(this, " + i + ", " + j + ")");   
+            inp.setAttribute("onkeydown" , "doOnKeyDown(this, " + i + ", " + j + ")");   
             inp.setAttribute("ondblclick","doOnDblClick(this," +i + "," + j+")");
           //inp.setAttribute("oninput", "alert(\"entering somn?\");");
-            inp.setAttribute("onchange", "say(this.value);");
+            inp.setAttribute("onchange", "cry(this.value);");
             inp.setAttribute("onblur", "doOnBlur(this," + i + ", " + j + ")");
 
             c.appendChild(inp);
@@ -214,13 +236,19 @@ function drawSpreadsheet(){
 
     mathRoomKey = true;
 
-    say("ready");
+    say("Ready.");
 
 }
 
+function cry(s){//debug mode
+    if(debug){
+        out.value += (s + "\r\n-> ");
+        out.scrollTop = out.scrollHeight;
+    }
+}
 function say(s){
-    out.value += (s + "\r\n-> ");
-    out.scrollTop = out.scrollHeight;
+        out.value += (s + "\r\n-> ");
+        out.scrollTop = out.scrollHeight;
 }
 function getcell(i,j){
     return sheetForm[(1+i)*(maxCols+2) + 2+j];
@@ -253,33 +281,34 @@ function checkin(row, col){
     var y = col;
     activeX = x;
     activeY = y;
-    say("cell " + x.toString() + " " + y.toString());
+    cry("cell " + x.toString() + " " + y.toString());
     clearCell = true;
-    enter2enter = true;
+    //enter2enter = true;
     //document.table[(maxCols+2)*(row)+ col].value = x.toString() + y.toString();
 }
 //to do on keydown
 
 
-function blink(e, x, y){
-    if(x == -1 || y <0) return;
-    if(toDo.queue != undefined) return;
+function doOnKeyDown(e, x, y){  
+    if((x == -1 || y <0 ) && pastingStage == 0) return;
+    if(toDo.queue != undefined) return; //do nothing because busy
     if((event.key === "Enter" || e.value == "") && e.readOnly){
         //clearCell = false;
         //enter2enter = false;
-        toDo.heap[x*maxCols+ y] = e.value;
+        toDo.heap[x*maxCols+ y] = e.value; //putting task on the todo heap while saving the prior value in the cell
         toDo.count +=1;
         e.readOnly = false;
+        e.style.borderColor = "";
         if(e.value != ""){
             e.value = numberToString(the.matrix[x][the.colMap[y]], mode);
             out.value = e.value;
         };
-        enter2enter = false;
+        //enter2enter = false;
         var s = e.getAttribute("style");
         e.style.backgroundColor = "#DDDDDD";
         setTimeout(function(){e.style = s}, 100);
         }
-    else if( event.key === "Enter" && !e.readOnly){
+    else if( event.key === "Enter" && !e.readOnly){ 
         //mathRoomKey = false;
         doOnBlur(e,x,y);
         /*say( "Entered in " + e.id + ": " + e.value);
@@ -298,10 +327,10 @@ function blink(e, x, y){
 }
 
 function doOnEnter(x,y, value){
-    say("Is this the new value?");
+    //say("Is this the new value?");
 }
 function doOnDblClick(cell, x, y){
-    say("double click at  " + x + " " + y);
+    cry("double click at  " + x + " " + y);
     if (x>=0 && y>=0){
         doOnBlur(cell, x,y);
         doItBaby("pivot", x, y);
@@ -311,16 +340,17 @@ function doOnDblClick(cell, x, y){
 //entering row/column labels
 
 function doOnBlur(cell, x,y ){
-    if(cell.readOnly) return;
-    say("blur");
+    if(x == -1 || y == -2) return;
+    if(cell.readOnly) return; 
+    cry("Blur");
     var s = cell.getAttribute("style");
     cell.style.borderColor = "blue";
     cell.style.backgroundColor = "blue";
-    setTimeout(function(){if(cell.style.backgroundColor == "blue") cell.style = s; cell.style.borderColor = ""}, 100);
-    say( "Entered in " + cell.id + ": " + cell.value);
+    setTimeout(function(){if(cell.style.borderColor == "blue") cell.style.borderColor = ""; if(cell.style.backgroundColor == "blue") cell.style.backgroundColor = "";}, 100);
+    cry( "Entered in " + cell.id + ": " + cell.value);
     var num = cell.value.replace(/\s/g, "").replace(/,/g, "");
     if(num != ""){
-        say(num);
+        cry(num);
         num = modes[mode].str2num(num);
         if(num == undefined){ //input failed to parse into a number
             alert("I don't understand this number"); 
@@ -329,8 +359,9 @@ function doOnBlur(cell, x,y ){
             else getcell(x,y).value = numberView(the.matrix[x][y], mode);
         }
         else{
-            say("calling fillOut(the, " + x + " , " + y + ", " + num + " )");
+            cry("calling fillOut(the, " + x + " , " + y + ", " + num + " )");
             fillOut(the, x, y, num);
+            cry("fillOut returned.");
             getcell(x,y).value = numberView(num, mode);
         }
     }
@@ -338,21 +369,79 @@ function doOnBlur(cell, x,y ){
     delete toDo.heap[x*maxCols+y];
     toDo.count -= 1;
     if(toDo.count == 0 && toDo.queue != undefined){
-        apply(toDo.queue[0], toDo.queue[1]);
+        cry("doOnBlur: calling " + toDo.queue[0]);
+        toDo.queue[0].apply(null, toDo.queue[1] );
     }
+    else {cry("doOnBlur: not calling anything, toDo.count = " + toDo.count);}
     
+}
+var doOnBlurBackup = doOnBlur;
+
+function doOnBlurWhenPasting(cell, x, y){
+    if(cell.readOnly) return; 
+    cry("Blur during paste");
+    cell.style.borderColor = "blue";
+    cell.style.backgroundColor = "blue";
+    setTimeout(function(){if(cell.style.borderColor == "blue") cell.style.borderColor = ""; if(cell.style.backgroundColor == "blue") cell.style.backgroundColor = "";}, 100);
+    cry( "Entered in " + cell.id + ": ")
+    cry(cell.value);
+    cry("Paste region has upper-left corner at " + x + ", " + y +".");
+    var copyStr = getcell(x,y).value;
+    //alert("I read the data.");
+    //if(copyStr.search(/[\r\t]/)==-1) {alert("Bad data");return false;}
+    //else {
+        // some fixing up for spaces around signs
+    copyStr=copyStr.replace(/( )([\+\-\/\*])( )/g,"$2");
+    var rowArr=copyStr.split(" ");
+    doOnBlur = doOnBlurBackup;
+    var rowLengths = [];
+    var nr=rowArr.length;
+    cry("number of rows to paste: " + nr);
+    for (var i=0;i<nr;i++) {
+        var colArr=rowArr[i].split("\t");
+        var nc = colArr.length;
+        rowLengths.push(nc);
+        cry("number of row elements to paste: " + nc);
+        var z = y;
+        for (var j=0;j<nc;j++){
+            if(z == -1) z = 0;//skip the ratio column
+            //alert("So far so good, want to write " + colArr[j]);
+            //document.theSpreadsheet.expr.value = colArr[j];
+            c = getcell(x+i, z);
+            c.value = colArr[j];
+            if(x+i == -1 || z == -2){
+               doOnChange(c, x+i, z);
+            }
+            else{
+                c.style.backgroundColor = "orange";
+                if(i !=0 || j !=0){
+                    c.readOnly = false;
+                    toDo.heap[(x+i)*maxCols+ z] = c.value; //putting task on the todo heap while saving the prior value in the cell
+                    toDo.count +=1;
+                }
+                doOnBlur(c, x+i, z);
+            }
+            z += 1;
+        }
+    }		
+    pasteRegion.x = i;
+    pasteRegion.y = j;
+    pasteRegion.rowLengths = rowLengths;
+    //var num = cell.value.replace(/\s/g, "").replace(/,/g, "");
+
 }
 
 function doOnLabelChange(cell, x, y){
     
 }
+//Processing entered Labels
 function doOnChange(cell,x,y){
-    say("doOnChange:");
+    cry("doOnChange:");
     if( !mathRoomKey) return;
     mathRoomKey = false;
     //cell is assumed to be a header row or header column
     var label = cell.value.trim();
-    say("x, y, trimmed value= " + x + ",  "  + y + ",  " + label);
+    cry("x, y, trimmed value= " + x + ",  "  + y + ",  " + label);
     if(condensed){
         if(x ==-1 && y>=0 && y < the.numCols-the.numRows){
           //y -= 2; //index in the matrix
@@ -377,7 +466,7 @@ function doOnChangeMode(btn){
         return;
     }
     var newMode = btn.value;
-    say(newMode);
+    cry(newMode);
     mode = newMode;    
     // switch(newMode) {
     //     case decimals:
@@ -392,7 +481,7 @@ function doOnChangeMode(btn){
 function changeView(v){
     view = v;
     displayMatrix();
-    say(v);
+    cry(v);
 }
 
 
@@ -741,188 +830,188 @@ function changeView(v){
 // } // end of doIt
 
 function doItBaby(){
+    var c;//cell
     if(toDo.queue != undefined) return;
-    if(toDo.count == 0) toDo.queue = "running";
-    if(toDo.count > 0) {toDo.queue = [doItBaby, doItBaby.arguments]; return;}
-    var action = doItBaby.arguments[0];
-    var x = doItBaby.arguments[1];
-    var y = doItBaby.arguments[2];
-    var arith = modes[mode];//the number system
-    say("doItBaby: " + (action-100));
+    if(toDo.count > 0) {say("NOT READY TO doItBaby!"); toDo.queue = [doItBaby, doItBaby.arguments]; return;}
+    if(toDo.count == 0)
+    try{
+        toDo.queue = "running";
+        var action = doItBaby.arguments[0];
+        var x = doItBaby.arguments[1];
+        var y = doItBaby.arguments[2];
+        var arith = modes[mode];//the number system
+        cry("doItBaby: " + (action));
 
-    if(action=="pivot"){
-        var okToRoll = true;
-        readMatrixBaby();
-        //use indexing appropriate for matrix
-        //x -=1;
-        var displayed_y = y;
-        if(x>= the.numRows || displayed_y >= the.numCols - (condensed? (the.numRows):0) ){
-            okToRoll = false;
-        }
-        else {
-            var entering = the.colMap[y];//actual matrix column index
-            //alert("doItBaby: " + action + " at " + x + " " + y);
-            if(arith.isNil(the.matrix[x][entering])){
-                okToRoll= false;
+        if(action=="pivot"){
+            var okToRoll = true;
+            readMatrixBaby();
+            //use indexing appropriate for matrix
+            //x -=1;
+            var displayed_y = y;
+            if(x>= the.numRows || displayed_y >= the.numCols - (condensed? (the.numRows):0) ){
+                okToRoll = false;
             }
-        }
-        if(!okToRoll){ say("I cannot pivot on zero");}
-        else{
-            say("pivoting at " + x + ", " + entering);
-            if(!condensed) verifyPivots();//never hurts, will optimize later
-            say(" about to pivot");
-            arith.piv(the.matrix,the.numRows, the.numCols, x, entering);
-            say("done pivoting");
-            //now update and redraw pivot positions
-            var leaving = the.pivots[x];
-            
-            if(leaving != entering){
-                if(!condensed){
-                    //alert("leaving= " + leaving);
-                    if(leaving != undefined) paintCol(the.colMapInv[leaving], "#FFFFFF", 0, maxRows-1);
-                    /*paintCol(theY, "DDDDDD");
-                    document.theSpreadsheet1[maxCols*(theX-1) + theY -1].style="background-color:AAAAAA";*/
-                    //alert("about to paintPivot: x = " + x + ", entering = " + entering + ", visible y = " + the.colMapInv[entering]);
-                    paintPivot(x, the.colMapInv[entering]); 
-                }
-                the.pivots[x] = entering;
-                getcell(x, -2).value = the.labels[entering];
-                for(var i = 0; i < maxRows; i++)//cannot have two pivots in the same column--seems redundant
-                    if(the.pivots[i] == entering && i != x) {
-                        the.pivots[i] = undefined;
-                        getcell(i,-2).value = "";}
-                if(condensed){
-                    the.colMap[displayed_y] = leaving;
-                    the.colMapInv[leaving] = displayed_y;
-                    getcell(-1,displayed_y).value =  the.labels[leaving];	  
+            else {
+                var entering = the.colMap[y];//actual matrix column index
+                //alert("doItBaby: " + action + " at " + x + " " + y);
+                if(arith.isNil(the.matrix[x][entering])){
+                    okToRoll= false;
                 }
             }
-            say("displaying matrix");
-            displayMatrix();
-            say("Done.");
-        }
-        toDo.queue = undefined;
-    }
-    else if (action == 9){//paste
-        //alert("You want to paste from " + x + " , " + y +"?");
-        var theStr = getcell(x,y).value;
-        //alert("I read the data.");
-        //if(theStr.search(/[\r\t]/)==-1) {alert("Bad data");return false;}
-        //else {
-            // some fixing up for spaces arond signs
-        theStr=theStr.replace(/( )([\+\-\/\*])( )/g,"$2");
-        var rowArr=theStr.split(" ");
-        var nr=rowArr.length;
-        for (var i=0;i<nr;i++) {
-            var colArr=rowArr[i].split("\t");
-            for (var j=0;j<colArr.length;j++){
-                //alert("So far so good, want to write " + colArr[j]);
-                //document.theSpreadsheet.expr.value = colArr[j];
-                getcell(x+i, y+j).value=colArr[j];
-                //fillOut()
-                }
-            }		
-        //}
-    }
-    else if(action ==10){//select a submatrix
-        //alert("You want to select a submatrix?");
-        //document.theSpreadsheet.expr.value = "selected " + submatrixSelectionStage + " " + x + " " + y;  
-        if(submatrixSelectionStage ==0){
-            submat11 = x;
-            submat12 = y;	
-            getcell(submat11,submat12).style= "background-color:orange";
-            submatrixSelectionStage = 1;
-            say("Select the opposite corner and press Submatrix again.");
-            return;
-        }
-        if(submatrixSelectionStage == 1){
-            //determine upper-left and lower-right corners of the copy rectangle
-            if(x >= submat11) submat21 = x;
-            else { submat21 = submat11; submat11 = x;}
-            if(y >= submat12) submat22 = y;
-            else{ submat22 = submat12; submat12 = y;}	
-            //document.theSpreadsheet.expr.value = "selected " + submatrixSelectionStage + " " + submat11 + " " + submat12 + " to " + x + " " + y;
-            dataBlock = "";
-            for(var i = submat11; i <= submat21; i++){
-                for(var j = submat12; j<= submat22; j++){
-                    //alert("i , j = " + i + " " + j + " " + dataBlock);
-                    var val = getcell(i,j).value;
-                    dataBlock += val + ( (j==y)?"":"\t");
-                    //f(j< y) dataBlock += "\t";
-                    //else dataBlock += "\n";
-                    getcell(i,j).style="background-color:orange";
-                }
-                dataBlock += ((i==x)?"":"\n");
-            }
-            document.getElementById("datapaste").value=dataBlock;
-            document.getElementById("datapaste").select();
-            say( "Press Ctrl-C to copy and then Submatrix to clear the selection.");
-            submatrixSelectionStage = 3;
-            return;
-        }
-        if(submatrixSelectionStage ==3){
-            for(var i = submat11; i <= submat21; i++){
-                for(var j = submat12; j<= submat22; j++){
-                    getcell(i,j).style="background-color:white";
-                }
-            }
-            submatrixSelectionStage = 0;
-            return;
-        }
-        
-    }
-    //Options 101 to 100+maxCols Compute Theta Ratios
-    else if (100 <= action   &&  action < 100 + maxCols )
-        {
-        var gr = arith.greater;
-        var pivCol = the.colMap[action - 100];
-        var constCol = the.colMap[the.numCols - (condensed?the.numRows:0) - 1];
-        //alert("action = " + action + ". Showing ratios in column number " + pivCol );
-        //readMatrix();
-        //document.theSpreadsheet.expr.value = "numRows = " + numRows;
-        verifyPivots();
-        //alert("YO " + the.numRows);
-        //if(condensed) pivCol += the.numRows;
-        var minRatio = -1;//-1
-        var ratio;
-        //alert("Ratios for column " +  pivcol + " theBasis: " + theBasis[0] + theBasis[1] + theBasis[3] );
-        for( i = 0; i< the.numRows; i++){
-            //document.theSpreadsheet.expr.value = i;
-            b = the.matrix[i][constCol];
-            a = the.matrix[i][pivCol];
-            //alert("iteration " + i);
-            if( gr(a,arith.zero()) && (gr(b,arith.zero()) || arith.isNil(b))){
-                ratio = arith.div(b,a);
-                //alert("a, b, ratio = " + a + b + ratio);
-                if(minRatio == -1) {minRatio = ratio;
-                //alert("a, b, ratio, min = " + a + b + ratio + minRatio);
-                }
-                else { //alert("about to modify minRatio. ratio, minRatio = " + ratio + " " + minRatio);
-                    if(gr(minRatio,ratio )) minRatio = arith.mul(ratio, arith.one());
-                    //alert("...modified");
+            if(!okToRoll){ say("I cannot pivot on zero");}
+            else{
+                cry("pivoting at " + x + ", " + entering);
+                if(!condensed) verifyPivots();//never hurts, will optimize later
+                cry(" about to pivot");
+                arith.piv(the.matrix,the.numRows, the.numCols, x, entering);
+                cry("done pivoting");
+                //now update and redraw pivot positions
+                var leaving = the.pivots[x];
+                
+                if(leaving != entering){
+                    if(!condensed){
+                        //alert("leaving= " + leaving);
+                        if(leaving != undefined) paintCol(the.colMapInv[leaving], "#FFFFFF", 0, maxRows-1);
+                        /*paintCol(theY, "DDDDDD");
+                        document.theSpreadsheet1[maxCols*(theX-1) + theY -1].style="background-color:AAAAAA";*/
+                        //alert("about to paintPivot: x = " + x + ", entering = " + entering + ", visible y = " + the.colMapInv[entering]);
+                        paintPivot(x, the.colMapInv[entering]); 
+                    }
+                    the.pivots[x] = entering;
+                    getcell(x, -2).value = the.labels[entering];
+                    for(var i = 0; i < maxRows; i++)//cannot have two pivots in the same column--seems redundant
+                        if(the.pivots[i] == entering && i != x) {
+                            the.pivots[i] = undefined;
+                            getcell(i,-2).value = "";}
+                    if(condensed){
+                        the.colMap[displayed_y] = leaving;
+                        the.colMapInv[leaving] = displayed_y;
+                        getcell(-1,displayed_y).value =  the.labels[leaving];	  
                     }
                 }
-            else {ratio = "";}
-            getcell(i, -1).value = (ratio == ""? "":arith.float(ratio));
-        }
-        //alert("minRatio = " + minRatio);
-        for( i = 0; i< the.numRows; i++){
-            b = the.matrix[i][constCol];
-            a = the.matrix[i][pivCol];
-            
-            if( gr(a,arith.zero()) && (gr(b,arith.zero()) || arith.isNil(b))){
-                //if(i >numRows){
-                //alert("row " + i + "a = " + a + "b= " + b);
-                //}
-                ratio = arith.div(b,a);
-                //alert("ratio=" + ratio);
-                getcell(i, -1).style.backgroundColor = (arith.equal(ratio, minRatio))? "#FFFFFF":"#DDDDDD";
+                cry("displaying matrix");
+                displayMatrix();
+                cry("Done.");
             }
-            else getcell(i, -1).style.backgroundColor="#DDDDDD";	
-        }//for
+            toDo.queue = undefined;
+            }
+        else if (action == 9){//paste
+            cry("pasting: stage = " + pastingStage);
+            if(pastingStage == 0){
+                document.getElementById("paste").style.backgroundColor = "orange";
+                say("Click on the upper-left corner of the paste region, press ctrl-V and then press Paste again.");
+                doOnBlur = doOnBlurWhenPasting;
+                pastingStage = 1;
+            }
+            else if(pastingStage ==1){
+                //doOnBlur = doOnBlurBackup;
+                document.getElementById("paste").style.backgroundColor = "";
+                pastingStage = 0;
+            }
+
+        }
+        else if(action ==10){//select a submatrix
+            //alert("You want to select a submatrix?");
+            //document.theSpreadsheet.expr.value = "selected " + submatrixSelectionStage + " " + x + " " + y;  
+            if(submatrixSelectionStage ==0){
+                submat11 = x;
+                submat12 = y;	
+                getcell(submat11,submat12).style.backgroundColor= "orange";
+                submatrixSelectionStage = 1;
+                say("Select the opposite corner and press Submatrix again.");
+            }
+            else if(submatrixSelectionStage == 1){
+                //determine upper-left and lower-right corners of the copy rectangle
+                if(x >= submat11) submat21 = x;
+                else { submat21 = submat11; submat11 = x;}
+                if(y >= submat12) submat22 = y;
+                else{ submat22 = submat12; submat12 = y;}	
+                //document.theSpreadsheet.expr.value = "selected " + submatrixSelectionStage + " " + submat11 + " " + submat12 + " to " + x + " " + y;
+                dataBlock = "";
+                for(var i = submat11; i <= submat21; i++){
+                    for(var j = submat12; j<= submat22; j++){
+                        if(j == -1) continue;
+                        //alert("i , j = " + i + " " + j + " " + dataBlock);
+                        var val = getcell(i,j).value;
+                        dataBlock += val + ( (j==submat22)?"":"\t");
+                        //f(j< y) dataBlock += "\t";
+                        //else dataBlock += "\n";
+                        getcell(i,j).style.backgroundColor = "orange";
+                    }
+                    dataBlock += ((i==submat21)?"":"\n");
+                }
+                document.getElementById("datapaste").value=dataBlock;
+                document.getElementById("datapaste").select();
+                say( "Press Ctrl-C to copy and then Submatrix to clear the selection.");
+                submatrixSelectionStage = 3;
+            }
+            else if(submatrixSelectionStage ==3){
+                for(var i = submat11; i <= submat21; i++){
+                    for(var j = submat12; j<= submat22; j++){
+                        if(j == -1) continue;
+                        getcell(i,j).style.backgroundColor = "";
+                    }
+                }
+                submatrixSelectionStage = 0;
+                return;
+            }
+
+        }
+        //Options 101 to 100+maxCols Compute Theta Ratios
+        else if (100 <= action   &&  action < 100 + maxCols )
+            {
+            var gr = arith.greater;
+            var pivCol = the.colMap[action - 100];
+            var constCol = the.colMap[the.numCols - (condensed?the.numRows:0) - 1];
+            //alert("action = " + action + ". Showing ratios in column number " + pivCol );
+            //readMatrix();
+            //document.theSpreadsheet.expr.value = "numRows = " + numRows;
+            verifyPivots();
+            //alert("YO " + the.numRows);
+            //if(condensed) pivCol += the.numRows;
+            var minRatio = -1;//-1
+            var ratio;
+            //alert("Ratios for column " +  pivcol + " theBasis: " + theBasis[0] + theBasis[1] + theBasis[3] );
+            for( i = 0; i< the.numRows; i++){
+                //document.theSpreadsheet.expr.value = i;
+                b = the.matrix[i][constCol];
+                a = the.matrix[i][pivCol];
+                //alert("iteration " + i);
+                if( gr(a,arith.zero()) && (gr(b,arith.zero()) || arith.isNil(b))){
+                    ratio = arith.div(b,a);
+                    //alert("a, b, ratio = " + a + b + ratio);
+                    if(minRatio == -1) {minRatio = ratio;
+                    //alert("a, b, ratio, min = " + a + b + ratio + minRatio);
+                    }
+                    else { //alert("about to modify minRatio. ratio, minRatio = " + ratio + " " + minRatio);
+                        if(gr(minRatio,ratio )) minRatio = arith.mul(ratio, arith.one());
+                        //alert("...modified");
+                        }
+                    }
+                else {ratio = "";}
+                getcell(i, -1).value = (ratio == ""? "":arith.float(ratio));
+            }
+            //alert("minRatio = " + minRatio);
+            for( i = 0; i< the.numRows; i++){
+                b = the.matrix[i][constCol];
+                a = the.matrix[i][pivCol];
+                
+                if( gr(a,arith.zero()) && (gr(b,arith.zero()) || arith.isNil(b))){
+                    //if(i >numRows){
+                    //alert("row " + i + "a = " + a + "b= " + b);
+                    //}
+                    ratio = arith.div(b,a);
+                    //alert("ratio=" + ratio);
+                    getcell(i, -1).style.backgroundColor = (arith.equal(ratio, minRatio))? "#FFFFFF":"#DDDDDD";
+                }
+                else getcell(i, -1).style.backgroundColor="#DDDDDD";	
+            }//for
+            toDo.queue = undefined;
+        }// end of Options 101 to 100+maxCols*/
+    }
+    finally{
         toDo.queue = undefined;
-    }// end of Options 101 to 100+maxCols*/
-toDo.queue = undefined;
+    }
 }//endo of doItBaby
 
 
@@ -932,8 +1021,8 @@ function stringToNumber(s, mode){
         if(mode == decimals){ 
             s = eval(s);
             if(isNaN(s)) return undefined;
-            return s;}
-        
+            return s;
+        }
         if(mode == fractions){
             frac = s.split("/");
             if(frac.length >2){
@@ -946,8 +1035,8 @@ function stringToNumber(s, mode){
                 if(! Number.isInteger(numer) || !Number.isInteger(denom) || denom == 0) return undefined;
                 else{
                     if(denom <0){
-                        denom *= -1;
-                        numer *= -1;
+                        denom = -denom;
+                        numer = -numer;
                     }
                     return  fracRed([numer, denom]);
                 }
@@ -970,16 +1059,51 @@ function stringToNumber(s, mode){
                 return fracRed([numer,10**i]); 
             }       
         }
+        if(mode ==bigfracs){
+            frac = s.split("/");
+            if(frac.length >2){
+                say("I don't understand this expression");
+                return undefined;
+            }
+            else if(frac.length == 2) {
+                var numer = BigInt(frac[0]);
+                var denom = BigInt(frac[1]);
+                //if(!Number.isInteger(numer) || !Number.isInteger(denom) || denom == 0) return undefined;
+                //else{
+                    if(denom <0){
+                        denom = -denom;
+                        numer = -numer;
+                    }
+                    return  fracRed([numer, denom]);
+                //}
+            }
+            else{//frac has one entry
+                var str = frac[0];
+                var int_dec = str.split(".");
+                if(int_dec.length == 2){
+                    if( int_dec[0].match(/^[\+\-]?[0-9]*$/) != null && int_dec[1].match(/^[0-9]*$/) != null){
+                        return fracRed( [BigInt(int_dec[0]+ int_dec[1]), 10n**BigInt(int_dec[1].length)] );
+                    }
+                }
+                var numer = BigInt(str);
+                return fracRed([numer, 1n]); 
+            }       
+        }
+
     }
     catch {return undefined;}
 }
 
 function numberToString(n, mode){
     if(mode == decimals){
-        return s.toString();
+        return n.toString();
     }
     if(mode == fractions){
         if(n[1] == 1) return n[0].toString();
+        return n[0].toString() + "/" + n[1].toString();
+        }
+    if(mode == bigfracs){
+        if(n[1] == 1n) return n[0].toString();
         return n[0].toString() + "/" + n[1].toString();
         }
 }
@@ -987,15 +1111,24 @@ function numberToString(n, mode){
 function numberView(n,mode){
     if(mode == decimals){
         if(view == decimals)
-            return "*" + s.toString();
+            return "" + n.toString();
     }
     if(mode == fractions){
         if(view == fractions){
-            if(n[1] == 1) return "*" + n[0].toString();
-            return "*" + n[0].toString() + "/" + n[1].toString();
+            if(n[1] == 1) return "" + n[0].toString();
+            return "" + n[0].toString() + "/" + n[1].toString();
         }
         else {//view == decimals
-            return "*"+ (n[0]/n[1]).toString();
+            return ""+ (n[0]/n[1]).toString();
+        }
+    }
+    if(mode == bigfracs){
+        if(view == fractions){
+            if(n[1] == 1) return "" + n[0].toString();
+            return "" + n[0].toString() + "/" + n[1].toString();
+        }
+        else {//view == decimals
+            return ""+ (Number(n[0]*10n**6n/n[1])/10**6).toString();
         }
     }
 }
@@ -1011,8 +1144,8 @@ function fillOut(s, x, y, z){
     var new_m = max(m, x+1);
     var cnew_m = c*new_m; //number of hidden columns
     var new_n = max(n-c*m, y + 1) + c*new_m; 
-    say("FillOut: placing " + z + "in grid position " + x + ", " + y)
-    say("FillOut:extending matrix to"+ m+ "x" + n+ " to " + new_m+ "x" + new_n); 
+    cry("FillOut: placing " + z + "in grid position " + x + ", " + y)
+    cry("FillOut:extending matrix to"+ m+ "x" + n+ " to " + new_m+ "x" + new_n); 
     //insert zero rows at the bottom
     for(var i = m; i < new_m; i++){
         mat[i] = []
@@ -1232,14 +1365,14 @@ function readMatrixBaby(){
 
 
 function paintCol(colnum, color, t, b){ //from t down to b
-    say("painting column " + colnum + " from " + t + " to " + b);
+    cry("painting column " + colnum + " from " + t + " to " + b);
     for(var i = t; i <= b; i++){
         getcell(i,colnum).style.backgroundColor = color;
     }
 }
 
 function paintPivot(r, c){
-    say("painting pivot " + r + ", " + c);
+    cry("painting pivot " + r + ", " + c);
     for(var i = 0; i < the.numRows; i++){
         getcell(i,c).style.backgroundColor = "#DDDDDD";
     }	
@@ -1310,7 +1443,7 @@ for(var i = 0; i< the.numRows; i++){
 	getcell(i, -1).value = "";
 	getcell(i, -1).style = "background-color:#DDDDDD";
     }
-say("Finished displaying Matrix");
+cry("Finished displaying Matrix");
 return(0);
 }
 
@@ -1319,7 +1452,7 @@ return(0);
 
 
 function verifyPivots(){
-    say("verifying pivots");
+    cry("verifying pivots");
     var arith = modes[mode];
 	for(var i = 0; i < the.numRows; i++){
 		var ok = true;
@@ -1331,11 +1464,11 @@ function verifyPivots(){
                 //remove the label
                 
             }*/
-            say("no pivot claimed in row " + i );
+            cry("no pivot claimed in row " + i );
             getcell(i, -2).value = ""; //no pivot label should be here;
             continue;
         }
-        say("there is a claimed pivot at" + i + ", " + pivotCol);
+        cry("there is a claimed pivot at" + i + ", " + pivotCol);
 		//alert("row, pivot = " + i + " " + pivotCol);
 		if(arith.equal(the.matrix[i][pivotCol],arith.one()))  {
 			for(var j = 0; j < the.numRows; j++)//check for nonzeros above and below the pivot
@@ -1343,7 +1476,7 @@ function verifyPivots(){
 			}
             else ok = false;
 		if(ok){
-            say("the column is pivoted as expected");
+            cry("the column is pivoted as expected");
 			if(!condensed) {
 				paintPivot(i, the.colMapInv[pivotCol] );
 				paintCol(the.colMapInv[pivotCol], "#FFFFFF", the.numRows, maxRows - 1);
@@ -1351,7 +1484,7 @@ function verifyPivots(){
 			getcell(i,-2).value = the.labels[pivotCol];
 		}
         else {//remove pivot 
-            say("the column is NOT pivoted as expected");
+            cry("the column is NOT pivoted as expected");
 			the.pivots[i] = undefined;
 			if(!condensed){
 			  paintCol(the.colMapInv[pivotCol], "#FFFFFF", 0, maxRows - 1);
@@ -1360,7 +1493,7 @@ function verifyPivots(){
 	    	
         }
     }//for
-    say("Pivots verified");
+    cry("Pivots verified");
 }//verifyPivots
 
 function isInBasicForm(){
@@ -1445,14 +1578,13 @@ function switchTableauType(){
     debug_me("have displayed");
     var value;
  	if(condensed) value = "Condensed";
- 	else value = "Expanded";
+ 	else value =          "Expanded ";
  	document.getElementById("condensed").value = value;
 }//end of switchTableau
 
 function showRatios(){
 	doIt(100 + activeY);
 }
-
 
 
 
@@ -1536,7 +1668,7 @@ function fracPivotMatrix(mat, rows, cols, row, col){
     // if(mode == fractions){
     //     var mult = function(x,y){Mat}
     //}
-    say("fracPivotMatrix: pivoting at "  + row + ", " + col);
+    cry("fracPivotMatrix: pivoting at "  + row + ", " + col);
     var pivot = mat[row][col];
     for(var j = 0; j < cols; j++){
         //alert("here we go... j = " + j);
@@ -1553,7 +1685,33 @@ function fracPivotMatrix(mat, rows, cols, row, col){
         }
         //mat[i][col] = 0 //in case floating point arithmetic fails?...
     }
-    say("fracPivotMatrix: done.");
+    cry("fracPivotMatrix: done.");
 }
 //------------------------------------------------------------------
 
+
+function uniPivotMatrix(mat, rows, cols, row, col, arith){
+    //scale pivot row
+    // if(mode == fractions){
+    //     var mult = function(x,y){Mat}
+    //}
+    cry("fracPivotMatrix: pivoting at "  + row + ", " + col);
+    var pivot = mat[row][col];
+    if(arith.isNil(pivot)) { cry("uniPivotMatrix: cannot pivot at 0"); return -1;}
+    for(var j = 0; j < cols; j++){
+        //alert("here we go... j = " + j);
+        mat[row][j] = arith.div(mat[row][j], pivot);
+    }
+    //alert("done scaling the pivot row");
+    //mat[row][col] = 1 //just in case floating point arithmetic gives an error?..
+    for( var i = 0; i < rows; i++){
+        //alert("here we go... i = " + i);
+        var fact = mat[i][col];
+        if(i == row || arith.isNil(fact)) continue;
+        for(j = 0; j < cols; j++){
+            mat[i][j] = arith.sub(mat[i][j], arith.mul(fact, mat[row][j]) );
+        }
+        //mat[i][col] = 0 //in case floating point arithmetic fails?...
+    }
+    cry("uniPivotMatrix: done.");
+}
