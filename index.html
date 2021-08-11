@@ -1,63 +1,65 @@
 <!DOCTYPE html>
 <html>
 
+    <script language = "javascript" src = "./own.js" ></script>
 
-<script language = "javascript" src = "./own.js" ></script>
+    <head> 
+        <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
+        <link rel="manifest" href="site.webmanifest">
+        <title>Simplex Tableau</title>
+    </head>
 
-<body>
-<form name = "controls">
-    <input type = "button" value = "Undo">
-    <input type = "button" value = "Redo">
-    <input type = "button" value = "Save This">
-    <input type = "button" value = "Revert to Saved">
-    <input type = "button" value = "Erase Everything">
-    &nbsp;&nbsp;&nbsp; &nbsp;
-    <input type="button" style= "background-color:#34A7C1; "  id = "condensed" onclick="cry('want to expand/condense?');onSwitchTableauType();" value = "Condensed"  size = "10">
-    &nbsp;&nbsp;&nbsp; &nbsp;
-    <span style = "white-space: nowrap">
-        Mode <select id = "mode" onchange = "doOnChangeMode(this)">
-                <option value=2>Fractions</option>
-                <option value=1>Decimals</option>
-                <option value=3 selected >Big Fractions</option>   
-            </select>
-    </span>
-    &nbsp;&nbsp;&nbsp; &nbsp;
-    <span style = "white-space: nowrap">
-        View <select onchange = "changeView(this.value)">
-                <option value=2>Fractions</option>
-                <option value=1 >Decimals</option>
-            </select>
-    </span>
-    &nbsp;&nbsp;&nbsp; &nbsp;
-    <span style = "white-space: nowrap"> Precision <input type = "text" size = "5" value = 10></span>
-     <br>
-    
-    <input type = "button" id = "paste" value = "Paste" onclick="doItBaby(9)">
-    <input type = "button" value = "Submatrix" onclick = "cry('clicked Submatrix '+ activeX + ', '  + activeY); cry('Oh yeah'); doItBaby(10, activeX, activeY)">
-    <input type = "button" id = "piv" value = "Pivot on Selection", onclick ="doItBaby('pivot', activeX, activeY)">
-    <!--<td><textarea name = "output" type = "text" size = "100" value = "" ></textarea><br>-->
-    <td><textarea name = "output" type = "text" cols = "100" rows = "5" value = "" ></textarea><br>
-</form>
-<form name = "sheetForm">
-<table id = "spreadsheet">
-  <tr><!--<td>
-    <div class="onoffswitch">
-        <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch" checked>
-        <label class="onoffswitch-label" for="myonoffswitch">
-            <span class="onoffswitch-inner"></span>
-            <span class="onoffswitch-switch"></span>
-        </label>
-    </div> 
-  </td> -->
-     <td><input type="text"  id = "cell -1 -2" onkeydown="doOnKeyDown(this,-1,-2)" onfocus = "checkin(-1, -2)" value = "" width = "10" size = "10" onblur = "doOnBlur(this, -1, -2)"></td> 
-     <!-- -- style= "background-color:#34A7C1; " ---->
-      <td ><input type="button" style= "background-color:white;"  id = "cell -1 -1" onkeydown="doOnKeyDown(this)" value ="Show Ratios" size = "10"></td>
-  </tr>
-</table>
-</form>
-<script> drawSpreadsheet();</script>
-<!-- -- for copying selected cells ---->
-<textarea style="position:fixed;top:0px;left:0px;width:2px;height:2px;padding:0;border:none;color:green;resize:none;overflow:hidden;color:transparent;" id="datapaste"></textarea>
-</body>
+    <body>
+        <form name = "controls">
+            <input type = "button" disabled value = "Undo">
+            <input type = "button" disabled value = "Redo">
+            <input type = "button" disabled value = "Save This">
+            <input type = "button" disabled value = "Revert to Saved">
+            <input type = "button" disabled value = "Erase Everything">
+            &nbsp;&nbsp;&nbsp; &nbsp;
+            <input type="button" id = "condensed" onclick="cry('want to expand/condense?');onSwitchTableauType();" value = "Condense!" >
+            &nbsp;&nbsp;&nbsp; &nbsp;
+            <span style = "white-space: nowrap">  
+                <select id = "mode" onchange = "doOnChangeMode(this)">
+                    <option value="bigfracs" selected >Fractions</option>
+                    <option value="decimals">Decimals</option>      
+                </select>
+                <span style="visibility:visible" id="view">displayed as 
+                    <select onchange = "changeView(this.value)">
+                        <option value="fractions">Fractions</option>
+                        <option value="decimals">Decimals</option>
+                    </select>
+                </span>
+            </span>
+            &nbsp;&nbsp;&nbsp; &nbsp;
+            <br>
+            <input type = "button" id = "paste" value = "Paste" onclick="doItBaby(9)">
+            <input type = "button" value = "Submatrix" onclick = "cry('clicked Submatrix '+ activeX + ', '  + activeY); cry('Oh yeah'); doItBaby(10, activeX, activeY)">
+            <input type = "button" id = "piv" value = "Pivot on Selection", onclick ="doItBaby('pivot', activeX, activeY)">
+            <br>
+            <td>
+                <textarea name = "output" type = "text" cols = "100" rows = "5" value = "" ></textarea>
+                <br>
+            </td>
+        </form>
+        <form name = "sheetForm">
+            <table id = "spreadsheet">
+                <tr>
+                    <td>
+                        <input type="text"  id = "cell -1 -2" onkeydown="doOnKeyDown(event, this,-1,-2)" onfocus = "checkin(-1, -2)" value = "" width = "10" size = "10" onblur = "doOnBlur(this, -1, -2)">
+                    </td>    
+                    <td >
+                        <input type="button" style= "background-color:white;"  id = "cell -1 -1" onclick="doItBaby(activeY + 100)" value ="Show Ratios" size = "10">
+                    </td>
+                </tr>
+            </table>
+        </form>
+        <script> drawSpreadsheet();</script>
+        <!-- -- for copying selected cells ---->
+        <textarea style="position:fixed;top:0px;left:0px;width:2px;height:2px;padding:0;border:none;color:green;resize:none;overflow:hidden;color:transparent;" id="datapaste">
+        </textarea>
+    </body>
 </html>
 
