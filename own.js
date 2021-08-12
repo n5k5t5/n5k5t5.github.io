@@ -81,7 +81,7 @@ var outputElt;
 var sheet;
 var sheetForm;
 
-var view = fractions;  //how numbers are currently displayed
+var view = decimals;  //how numbers are currently displayed
 var condensed = false; //the form of tableau:  condensed or not
 
 function max(x,y){
