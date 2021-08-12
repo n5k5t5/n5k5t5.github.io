@@ -257,31 +257,33 @@ function checkin(row, col){
     clearCell = true;
 }
 
+function startEditingCell(x, y) {
+    cell = getcell(x,y);
+    toDo.heap[x*maxCols+ y] = cell.value; //putting task on the todo heap while saving the prior value in the cell
+    toDo.count +=1;
+    cell.readOnly = false;
+    cell.style.borderColor = "gray";
+    if(cell.value != ""){
+        cell.value = numberToString(the.matrix[x][the.colMap[y]], the.mode);
+        outputElt.value = cell.value;
+        };
+    var s = cell.getAttribute("style");
+    cell.style.backgroundColor = "#DDDDDD";
+    setTimeout(function(){cell.style = s}, 100);
+    cell.focus();     
+    }
+
 //to do on keydown
-function doOnKeyDown(event, e, x, y){  
+function doOnKeyDown(event, cell, x, y){  
     if((x == -1 || y <0 ) && pastingStage == 0) return;
     if(toDo.queue != undefined) return; //do nothing because busy
-    if((event.key === "Enter" || e.value == "") && e.readOnly){
-        toDo.heap[x*maxCols+ y] = e.value; //putting task on the todo heap while saving the prior value in the cell
-        toDo.count +=1;
-        e.readOnly = false;
-        e.style.borderColor = "gray";
-        if(e.value != ""){
-            e.value = numberToString(the.matrix[x][the.colMap[y]], the.mode);
-            outputElt.value = e.value;
-            };
-        var s = e.getAttribute("style");
-        e.style.backgroundColor = "#DDDDDD";
-        setTimeout(function(){e.style = s}, 100);
-        }
-    else if( event.key === "Enter" && !e.readOnly){ 
+    if((event.key === "Enter" || cell.value == "") && cell.readOnly){
+        startEditingCell(x,y);
+    }
+    else if( event.key === "Enter" && !cell.readOnly){ 
         //mathRoomKey = false;
-        doOnBlur(e,x,y);
+        doOnBlur(cell,x,y);
         }
-}
-
-function doOnEnter(x,y, value){
-    //say("Is this the new value?");
 }
 
 function doOnDblClick(cell, x, y){
@@ -769,7 +771,7 @@ function fillOut(s, x, y, z){
         //alert("j=" + j);
         for(i = 0; i < new_m; i++){
             mat[i][j] = zero();
-            //getcell(1+ i,2+ j-cnew_m).value =0;
+            
         }
         s.colMap[j-cnew_m] = j;
         s.colMapInv[j] = j-cnew_m;
