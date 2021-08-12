@@ -5,3 +5,8 @@
 input:focus{
     outline-color: var(--green);  
   }
+
+ * { 
+border-width: 1px;
+border-radius: 2px;
+ }
