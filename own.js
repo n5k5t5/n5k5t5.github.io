@@ -4,7 +4,7 @@ var maxCols = 15;
 var maxRows = 25;
 var mathRoomKey = false;
 var dataBlock= ""; // for copying data
-
+var ourGreen = "#5bb568"
 //supported numerical types
 const decimals = "decimals";
 const fractions = "fractions";
@@ -183,8 +183,6 @@ function drawSpreadsheet(){
         inp.setAttribute("style", "background-color:white; border-color:grey");
         inp.setAttribute("onfocus","checkin(" +i + "," + j+")");
         inp.setAttribute("onkeydown" , "doOnKeyDown(event, this, " + i + ", " + j + ")");   
-        //inp.setAttribute("ondblclick","doOnDblClick(this, " +i + "," + j+")");
-      //inp.setAttribute("oninput", "alert(\"entering somn?\");");
         inp.setAttribute("onchange", "doOnChange(this," + i + ", " + j + ")");
         inp.setAttribute("onblur", "doOnBlur(this," + i + ", " + j + ")");
 
@@ -212,14 +210,11 @@ function drawSpreadsheet(){
             inp.setAttribute("type", "text");
             inp.setAttribute("id", "cell " + i + " " + j );
             inp.setAttribute("size", "10");
-
             inp.setAttribute("style", "background-color:white;");
-            //inp.readOnly = true;
             inp.setAttribute("readonly" , true);
             inp.setAttribute("onfocus","checkin("+i + "," + j+")");
             inp.setAttribute("onkeydown" , "doOnKeyDown(event, this, " + i + ", " + j + ")");   
             inp.setAttribute("ondblclick","doOnDblClick(this," +i + "," + j+")");
-          //inp.setAttribute("oninput", "alert(\"entering somn?\");");
             inp.setAttribute("onchange", "cry(this.value);");
             inp.setAttribute("onblur", "doOnBlur(this," + i + ", " + j + ")");
 
@@ -304,9 +299,9 @@ function doOnBlur(cell, x,y ){
     if(cell.readOnly) return; 
     cry("doOnBlur");
     var s = cell.getAttribute("style");
-    cell.style.borderColor = "blue";
-    cell.style.backgroundColor = "blue";
-    setTimeout(function(){if(cell.style.borderColor == "blue") cell.style.borderColor = "gray"; if(cell.style.backgroundColor == "blue") cell.style.backgroundColor = "";}, 100);
+    cell.style.borderColor = ourGreen;
+    cell.style.backgroundColor = ourGreen;
+    setTimeout(function(){cell.style.borderColor = "gray"; cell.style.backgroundColor = "";}, 100);
     cry( "Entered in " + cell.id + ": " + cell.value);
     var num = cell.value.replace(/\s/g, "").replace(/,/g, "");
     
@@ -342,9 +337,9 @@ var doOnBlurBackup = doOnBlur;
 function doOnBlurWhenPasting(cell, x, y){
     if(cell.readOnly) return; 
     cry("Blur during paste");
-    cell.style.borderColor = "blue";
-    cell.style.backgroundColor = "blue";
-    setTimeout(function(){if(cell.style.borderColor == "blue") cell.style.borderColor = ""; if(cell.style.backgroundColor == "blue") cell.style.backgroundColor = "";}, 100);
+    cell.style.borderColor = ourGreen;
+    cell.style.backgroundColor = ourGreen;
+    setTimeout(function(){cell.style.borderColor = ""; cell.style.backgroundColor = "";}, 100);
     cry( "Entered in " + cell.id + ": ")
     cry(cell.value);
     cry("Paste region has upper-left corner at " + x + ", " + y +".");

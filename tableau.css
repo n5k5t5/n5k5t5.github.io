@@ -1,5 +1,7 @@
-
-.inactive {
-
-    
+:root{
+    --green: #5bb568;   /* lambda-chat green!!! */
 }
+
+input:focus{
+    outline-color: var(--green);  
+  }
