@@ -298,7 +298,6 @@ function doOnBlur(cell, x,y ){
     if(x == -1 || y == -2) return;
     if(cell.readOnly) return; 
     cry("doOnBlur");
-    var s = cell.getAttribute("style");
     cell.style.borderColor = ourGreen;
     cell.style.backgroundColor = ourGreen;
     setTimeout(function(){cell.style.borderColor = "gray"; cell.style.backgroundColor = "";}, 100);
