@@ -270,9 +270,9 @@ function doOnKeyDown(event, e, x, y){
             e.value = numberToString(the.matrix[x][the.colMap[y]], the.mode);
             outputElt.value = e.value;
             };
-        var s = e.getAttribute("style");
+        //var s = e.getAttribute("style");
         e.style.backgroundColor = "#DDDDDD";
-        setTimeout(function(){e.style = s}, 100);
+        setTimeout(function(){e.style.backgroundColor = "";}, 100);
         }
     else if( event.key === "Enter" && !e.readOnly){ 
         //mathRoomKey = false;
