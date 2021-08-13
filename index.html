@@ -40,7 +40,7 @@
             <input type = "button" id = "paste" value = "Paste" onclick="doItBaby(9)">
             <input type = "button" value = "Submatrix" onclick = "cry('clicked Submatrix '+ activeX + ', '  + activeY); cry('Oh yeah'); doItBaby(10, activeX, activeY)">
             <input type = "button" id = "piv" value = "Pivot on Selection" onclick ="doItBaby('pivot', activeX, activeY)">
-            <input type = "button" id = "edit" value  = "Edit Cell" onclick = "if(getcell(activeX, activeY).readOnly) startEditingCell(activeX, activeY)">
+            On double click: <input type = "button" id = "doubleclickmodebutton" value  = "Edit" onclick = "toggleDoubleClickMode();">
             <br>
             <td>
                 <textarea name = "output" type = "text" cols = "100" rows = "5" value = "" ></textarea>

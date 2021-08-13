@@ -83,6 +83,23 @@ var sheetForm;
 
 var view = decimals;  //how numbers are currently displayed
 var condensed = false; //the form of tableau:  condensed or not
+var doubleClickMode="edit";
+
+var openCells = {};
+
+function cellIsOpen(x,y){
+ return Boolean(openCells[x*maxCols + y]);
+}
+
+function openCell(x,y){
+    openCells[x*maxCols + y] = true;
+    getcell(x,y).readOnly = false;
+}
+
+function closeCell(x,y){
+    delete openCells[x*maxCols + y];
+    getcell(x,y).readOnly = true;
+}
 
 function max(x,y){
     return x>y? x:y;
@@ -163,7 +180,7 @@ function drawSpreadsheet(){
         inp.setAttribute("onblur", "doOnBlur(this," + i + ", " + j + ")");
         inp.setAttribute("onfocus","checkin(-1, " + j + ")");
         inp.setAttribute("onkeydown", "doOnKeyDown(event, this, -1, " + j + ")");
-        inp.setAttribute("ondblclick", "doItBaby(" + (100 + j) + ");");//show ratios
+        inp.setAttribute("ondblclick", `if(doubleClickMode=='pivot')doItBaby(${100 + j});`);//show ratios
         inp.setAttribute("value", "x" + j);
         var c = document.createElement("td");
         c.appendChild(inp);
@@ -211,13 +228,13 @@ function drawSpreadsheet(){
             inp.setAttribute("id", "cell " + i + " " + j );
             inp.setAttribute("size", "10");
             inp.setAttribute("style", "background-color:white;");
-            inp.setAttribute("readonly" , true);
-            inp.setAttribute("onfocus","checkin("+i + "," + j+")");
+            //inp.setAttribute("readonly" , true);
+            inp.setAttribute("onfocus","checkin("+i + "," + j+");");
             inp.setAttribute("onkeydown" , "doOnKeyDown(event, this, " + i + ", " + j + ")");   
             inp.setAttribute("ondblclick","doOnDblClick(this," +i + "," + j+")");
+            inp.setAttribute("ontouchstart", `console.log("touched");if(!cellIsOpen(${i},${j}))startEditingCell(${i},${j});`);
             inp.setAttribute("onchange", "cry(this.value);");
             inp.setAttribute("onblur", "doOnBlur(this," + i + ", " + j + ")");
-
             c.appendChild(inp);
             r.appendChild(c);
         }
@@ -261,44 +278,64 @@ function startEditingCell(x, y) {
     cell = getcell(x,y);
     toDo.heap[x*maxCols+ y] = cell.value; //putting task on the todo heap while saving the prior value in the cell
     toDo.count +=1;
-    cell.readOnly = false;
+    //cell.readOnly = false;
+    openCell(x,y);
     cell.style.borderColor = "gray";
     if(cell.value != ""){
+        //cell.value = ""; //to remove selection
         cell.value = numberToString(the.matrix[x][the.colMap[y]], the.mode);
+        cell.selectionStart = cell.selectionEnd;
         outputElt.value = cell.value;
         };
     var s = cell.getAttribute("style");
     cell.style.backgroundColor = "#DDDDDD";
-    setTimeout(function(){cell.style = s}, 100);
-    cell.focus();     
+    setTimeout(function(){cell.style.backgroundColor = ""}, 100);
+     
     }
 
+function toggleDoubleClickMode(){
+    if(doubleClickMode == "edit"){
+        doubleClickMode = "pivot";
+        document.getElementById("doubleclickmodebutton").value = "Pivot";
+    }
+    else if(doubleClickMode == "pivot"){
+        doubleClickMode = "edit";
+        document.getElementById("doubleclickmodebutton").value = "Edit";
+    }
+}
+
 //to do on keydown
-function doOnKeyDown(event, cell, x, y){  
+function doOnKeyDown(event, cell, x, y){ 
     if((x == -1 || y <0 ) && pastingStage == 0) return;
     if(toDo.queue != undefined) return; //do nothing because busy
-    if((event.key === "Enter" || cell.value == "") && cell.readOnly){
+    if((event.key === "Enter" || cell.value == "") && !cellIsOpen(x,y)){
+        console.log(event.code);
         startEditingCell(x,y);
     }
-    else if( event.key === "Enter" && !cell.readOnly){ 
+    else if( event.key === "Enter" && cellIsOpen(x,y)){ 
         //mathRoomKey = false;
         doOnBlur(cell,x,y);
         }
+  
 }
 
 function doOnDblClick(cell, x, y){
     cry("double click at  " + x + " " + y);
     if (x>=0 && y>=0){
-        doOnBlur(cell, x,y);
-        doItBaby("pivot", x, y);
+        if(doubleClickMode == "pivot"){
+            doOnBlur(cell, x,y);
+            doItBaby("pivot", x, y);
+        }
+        else if (doubleClickMode == "edit" && !cellIsOpen(x,y)){
+            startEditingCell(x, y);
+        }
     }
 
 }
 
-//entering row/column labels
 function doOnBlur(cell, x,y ){
     if(x == -1 || y == -2) return;
-    if(cell.readOnly) return; 
+    if(!cellIsOpen(x,y)) return; 
     cry("doOnBlur");
     var s = cell.getAttribute("style");
     cell.style.borderColor = ourGreen;
@@ -323,7 +360,7 @@ function doOnBlur(cell, x,y ){
             getcell(x,y).value = numberView(num, the.mode);
         }
     }
-    cell.readOnly = true;
+    closeCell(x,y);
     delete toDo.heap[x*maxCols+y];
     toDo.count -= 1;
     if(toDo.count == 0 && toDo.queue != undefined){
@@ -337,7 +374,7 @@ function doOnBlur(cell, x,y ){
 var doOnBlurBackup = doOnBlur;
 
 function doOnBlurWhenPasting(cell, x, y){
-    if(cell.readOnly) return; 
+    if(!cellIsOpen(x,y)) return; 
     cry("Blur during paste");
     cell.style.borderColor = ourGreen;
     cell.style.backgroundColor = ourGreen;
@@ -374,7 +411,7 @@ function doOnBlurWhenPasting(cell, x, y){
             else{
                 c.style.backgroundColor = "orange";
                 if(i !=0 || j !=0){
-                    c.readOnly = false;
+                    cellOpen(`${x+i},${z}`) = true;
                     toDo.heap[(x+i)*maxCols+ z] = c.value; //putting task on the todo heap while saving the prior value in the cell
                     toDo.count +=1;
                 }
@@ -938,7 +975,7 @@ function switchTableauType(){
     var value;
  	if(condensed) {
          value = "  Expand   ";
-         document.getElementById("condensed").style.backgroundColor="#5bb568";}
+         document.getElementById("condensed").style.backgroundColor=ourGreen;}
  	else {
          value =          "Condense!";
          document.getElementById("condensed").style.backgroundColor="transparent";}
