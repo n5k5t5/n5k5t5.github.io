@@ -164,11 +164,7 @@ function drawSpreadsheet(){
         inp.setAttribute("onfocus","checkin(-1, " + j + ")");
         inp.setAttribute("onkeydown", "doOnKeyDown(event, this, -1, " + j + ")");
         inp.setAttribute("ondblclick", "doItBaby(" + (100 + j) + ");");//show ratios
-<<<<<<< HEAD
-        inp.setAttribute("value", "X" + (j+1));
-=======
-        inp.setAttribute("value", "x" + (j+1));
->>>>>>> ba3f9eb39bb3ebadf61c929f2e05512487bdac2c
+        inp.setAttribute("value", "" + (j+1));
         var c = document.createElement("td");
         c.appendChild(inp);
         r.appendChild(c)
