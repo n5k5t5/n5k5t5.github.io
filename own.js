@@ -159,12 +159,12 @@ function drawSpreadsheet(){
         inp.setAttribute("size", "10");
         inp.setAttribute("style","background-color:white; border-color:gray" );
       //inp.setAttribute("oninput", "alert(\"entering somn?\");");
-        inp.setAttribute("onchange", "doOnChange(this, -1," + j + ")");
+        inp.setAttribute("onchange", "doOnLabelChange(this, -1," + j + ")");
         inp.setAttribute("onblur", "doOnBlur(this," + i + ", " + j + ")");
         inp.setAttribute("onfocus","checkin(-1, " + j + ")");
         inp.setAttribute("onkeydown", "doOnKeyDown(event, this, -1, " + j + ")");
         inp.setAttribute("ondblclick", "doItBaby(" + (100 + j) + ");");//show ratios
-        inp.setAttribute("value", "x" + j);
+        inp.setAttribute("value", "x" + (j+1));
         var c = document.createElement("td");
         c.appendChild(inp);
         r.appendChild(c)
@@ -183,7 +183,7 @@ function drawSpreadsheet(){
         inp.setAttribute("style", "background-color:white; border-color:grey");
         inp.setAttribute("onfocus","checkin(" +i + "," + j+")");
         inp.setAttribute("onkeydown" , "doOnKeyDown(event, this, " + i + ", " + j + ")");   
-        inp.setAttribute("onchange", "doOnChange(this," + i + ", " + j + ")");
+        inp.setAttribute("onchange", "doOnLabelChange(this," + i + ", " + j + ")");
         inp.setAttribute("onblur", "doOnBlur(this," + i + ", " + j + ")");
 
         c.appendChild(inp);
@@ -292,7 +292,7 @@ function doOnDblClick(cell, x, y){
 
 }
 
-//entering row/column labels
+//entering matrix values
 function doOnBlur(cell, x,y ){
     if(x == -1 || y == -2) return;
     if(cell.readOnly) return; 
@@ -365,7 +365,7 @@ function doOnBlurWhenPasting(cell, x, y){
             c = getcell(x+i, z);
             c.value = colArr[j];
             if(x+i == -1 || z == -2){
-               doOnChange(c, x+i, z);
+               doOnLabelChange(c, x+i, z);
             }
             else{
                 c.style.backgroundColor = "orange";
@@ -386,13 +386,9 @@ function doOnBlurWhenPasting(cell, x, y){
 
 }
 
-function doOnLabelChange(cell, x, y){
-    
-}
-
 //Processing entered Labels
-function doOnChange(cell,x,y){
-    cry("doOnChange:");
+function doOnLabelChange(cell,x,y){
+    cry("doOnLabelChange:");
     if( !mathRoomKey) return;
     mathRoomKey = false;
     //cell is assumed to be a header row or header column
@@ -504,7 +500,6 @@ function doItBaby(){
                 pastingStage = 1;
             }
             else if(pastingStage ==1){
-                //doOnBlur = doOnBlurBackup;
                 document.getElementById("paste").style.backgroundColor = "";
                 pastingStage = 0;
             }
