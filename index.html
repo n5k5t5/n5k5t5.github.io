@@ -16,11 +16,11 @@
         <form name = "controls">
             <input type = "button" disabled value = "Undo">
             <input type = "button" disabled value = "Redo">
-            <input type = "button" disabled value = "Save This">
-            <input type = "button" disabled value = "Revert to Saved">
-            <input type = "button" disabled value = "Erase Everything">
+            <input type = "button" value = "Save This" onclick="say('saving');savedState=cloneState(the);document.getElementById('revertbutton').removeAttribute('disabled');">
+            <input type = "button" disabled id = "revertbutton" value = "Revert to Saved" onclick="assumeState(savedState);">
+            <input type = "button" value = "Erase" onclick="erase();">
             &nbsp;&nbsp;&nbsp; &nbsp;
-            <input type="button" id = "condensed" onclick="cry('want to expand/condense?');onSwitchTableauType();" value = "Condense!" >
+            <input type="button" id = "condensed" onclick="cry('want to expand/condense?');switchTableauType();" value = "Condense!" >
             &nbsp;&nbsp;&nbsp; &nbsp;
             <span style = "white-space: nowrap">  
                 <select id = "mode" onchange = "doOnChangeMode(this)">

@@ -82,7 +82,7 @@ var sheet;
 var sheetForm;
 
 var view = decimals;  //how numbers are currently displayed
-var condensed = false; //the form of tableau:  condensed or not
+
 
 function max(x,y){
     return x>y? x:y;
@@ -108,9 +108,10 @@ function state(m, n, dataType){
         mat.push((new Array(n)).fill(modes[dataType].zero()));
     this.matrix = mat;
     this.colMap = [];
-    this.pivots = [new (Array(m).fill(undefined))];
-    this.labels = [];
     this.colMapInv = [];
+    this.labels = [];
+    this.pivots = [new (Array(m).fill(undefined))];
+    
     this.mode = dataType;
     //perhaps these should be excluded later
     this.condensed = false;
@@ -134,12 +135,11 @@ function cloneState(s){
     clone.numCols = nc;
     clone.matrix = mat;
     clone.colMap = s.colMap.slice();
-    clone.colMapInv= s.colManInv.slice();
+    clone.colMapInv= s.colMapInv.slice();
     clone.pivots = s.pivots.slice();
     clone.mode = s.mode;
     clone.labels = s.labels.slice();
     //the state of the display
-    //clone.tableauType = s.tableauType;
     clone.condensed = s.condensed;
     clone.view = s.view;
     return clone;
@@ -313,8 +313,8 @@ function doOnBlur(cell, x,y ){
             else getcell(x,y).value = numberView(the.matrix[x][y], the.mode);
         }
         else{
-            cry("calling fillOut(the, " + x + " , " + y + ", " + num + " )");
-            fillOut(the, x, y, num);
+            cry("calling fillOut(" + x + " , " + y + ", " + num + " )");
+            fillOut(x, y, num);
             cry("fillOut returned.");
             getcell(x,y).value = numberView(num, the.mode);
         }
@@ -394,9 +394,8 @@ function doOnLabelChange(cell,x,y){
     //cell is assumed to be a header row or header column
     var label = cell.value.trim();
     cry("x, y, trimmed value= " + x + ",  "  + y + ",  " + label);
-    if(condensed){
+    if(the.condensed){
         if(x ==-1 && y>=0 && y < the.numCols-the.numRows){
-          //y -= 2; //index in the matrix
           the.labels[the.colMap[y]] = label;
         }
         else if(y == -2 && x >=0 && x<the.numRows){//row label
@@ -444,11 +443,10 @@ function doItBaby(){
 
         if(action=="pivot"){
             var okToRoll = true;
-            readMatrixBaby();
             //use indexing appropriate for matrix
             //x -=1;
             var displayed_y = y;
-            if(x>= the.numRows || displayed_y >= the.numCols - (condensed? (the.numRows):0) ){
+            if(x>= the.numRows || displayed_y >= the.numCols - (the.condensed? (the.numRows):0) ){
                 okToRoll = false;
             }
             else {
@@ -460,7 +458,7 @@ function doItBaby(){
             if(!okToRoll){ say("I cannot pivot on zero");}
             else{
                 cry("pivoting at " + x + ", " + entering);
-                if(!condensed) verifyPivots();//never hurts, will optimize later
+                if(!the.condensed) verifyPivots();//never hurts, will optimize later
                 cry(" about to pivot");
                 arith.piv(the.matrix,the.numRows, the.numCols, x, entering);
                 cry("done pivoting");
@@ -468,7 +466,7 @@ function doItBaby(){
                 var leaving = the.pivots[x];
                 
                 if(leaving != entering){
-                    if(!condensed){
+                    if(!the.condensed){
                         //alert("leaving= " + leaving);
                         if(leaving != undefined) paintCol(the.colMapInv[leaving], "#FFFFFF", 0, maxRows-1);
                         paintPivot(x, the.colMapInv[entering]); 
@@ -479,7 +477,7 @@ function doItBaby(){
                         if(the.pivots[i] == entering && i != x) {
                             the.pivots[i] = undefined;
                             getcell(i,-2).value = "";}
-                    if(condensed){
+                    if(the.condensed){
                         the.colMap[displayed_y] = leaving;
                         the.colMapInv[leaving] = displayed_y;
                         getcell(-1,displayed_y).value =  the.labels[leaving];	  
@@ -557,11 +555,11 @@ function doItBaby(){
             {
             var gr = arith.greater;
             var pivCol = the.colMap[action - 100];
-            var constCol = the.colMap[the.numCols - (condensed?the.numRows:0) - 1];
+            var constCol = the.colMap[the.numCols - (the.condensed?the.numRows:0) - 1];
             //alert("action = " + action + ". Showing ratios in column number " + pivCol );
             verifyPivots();
             //alert("YO " + the.numRows);
-            //if(condensed) pivCol += the.numRows;
+            //if(the.condensed) pivCol += the.numRows;
             var minRatio = -1;//-1
             var ratio;
             //alert("Ratios for column " +  pivcol + " theBasis: " + theBasis[0] + theBasis[1] + theBasis[3] );
@@ -651,7 +649,7 @@ function stringToNumber(s, mode){
                 return fracRed([numer,10**i]); 
             }       
         }
-        if(mode ==bigfracs){
+        if(mode==bigfracs){
             frac = s.split("/");
             if(frac.length >2){
                 say("I don't understand this expression");
@@ -700,6 +698,7 @@ function numberToString(n, mode){
         }
 }
 
+//create a string representation of a number, as seen in the tableau
 function numberView(n,mode){
     if(mode == decimals){
         if(view == decimals)
@@ -724,15 +723,16 @@ function numberView(n,mode){
         }
     }
 }
-//extend the matrix with zeros and put z in row x and col y on the grid relative to the Corner. 
-function fillOut(s, x, y, z){
+
+//extend the matrix with zeros and put z in row x and col y on the grid relative to the Corner.  Update output 
+function fillOut(x, y, z){
 
     var zero = modes[the.mode].zero;
     var one = modes[the.mode].one;
-    var mat = s.matrix;
-    var m = s.numRows;
-    var n = s.numCols;
-    var c = condensed? 1:0;
+    var mat = the.matrix;
+    var m = the.numRows;
+    var n = the.numCols;
+    var c = the.condensed? 1:0;
     var new_m = max(m, x+1);
     var cnew_m = c*new_m; //number of hidden columns
     var new_n = max(n-c*m, y + 1) + c*new_m; 
@@ -747,7 +747,7 @@ function fillOut(s, x, y, z){
             //getcell(1+ i, 2+ j).value= 0;
             } 
         }
-    if(condensed){//let's insert some pivot columns
+    if(the.condensed){//let's insert some pivot columns
         for(j = n; j < n + new_m - m; j++){
             for(i = 0; i<new_m; i++){
                 mat[i][j] = zero();
@@ -764,29 +764,24 @@ function fillOut(s, x, y, z){
             mat[i][j] = zero();
             //getcell(1+ i,2+ j-cnew_m).value =0;
         }
-        s.colMap[j-cnew_m] = j;
-        s.colMapInv[j] = j-cnew_m;
+        the.colMap[j-cnew_m] = j;
+        the.colMapInv[j] = j-cnew_m;
     }
-    mat[x][s.colMap[y]] = z;
+    mat[x][the.colMap[y]] = z;
     getcell(x, y).value = modes[the.mode].num2str(z);
-    s.numRows = new_m;
-    s.numCols =  new_n;
+    the.numRows = new_m;
+    the.numCols =  new_n;
    
     //now read labels
     for(j = n-c*m; j<= y; j++){
         the.labels[the.colMap[j]] = getcell(-1, j).value.trim();
     }
-    if(condensed){
+    if(the.condensed){
         for(i = m; i <=x; i++){
             the.labels[the.pivots[i]] = getcell(i,-2).value.trim();
         }
     }
     
-}
-
-function readMatrixBaby(){
-
-
 }
 
 function paintCol(colnum, color, t, b){ //from t down to b
@@ -803,7 +798,74 @@ function paintPivot(r, c){
     }	
     getcell(r,c).style.backgroundColor =  "#AAAAAA";
 }
+
+//erase labels and entries, but keep memory and history 
+function erase(){
+    clearTheScreen();
+    //reset internally stored value
+    the.numRows = 0;
+    the.numCols = 0;
+    the.matrix = [];
+    the.labels = [];
+    the.colMap = []
+    the.colMapInv = [];
+    the.labels = [];
+    the.pivots = [];
+}
+
+//clear the webpage
+function clearTheScreen(){
+    //clear the matrix
+    for(let i = 0; i < maxRows; i++){
+        for(let j = 0; j < maxCols; j++){
+            getcell(i, j).value = "";
+            getcell(i,j).style = "background-color:#FFFFFF";
+        }
+    }
     
+    //clear row labels
+    for(i = 0; i < maxRows; i++){
+        getcell(i, -2).value = "";
+    }
+
+    //clear column labels
+    for(j = 0; j < maxCols; j++){
+        getcell(-1, j).value = "";
+    }
+
+    //clear ratios
+    for(i = 0; i < maxRows; i++){
+        getcell(i, -1).value = "";
+        getcell(i, -1).style.backgroundColor = "#DDDDDD";
+    }
+}
+
+//assume state
+function assumeState(newState){
+    //erase the matrix along with labels
+    clearTheScreen();
+    the = cloneState(newState);
+    //set mode, tableau type, matrix, column labels, row labels
+    refresh();
+}
+
+function refresh(){
+    document.getElementById("mode").val = the.mode;
+    setCondensedElementValue(the.condensed);
+    displayMatrix();
+}
+
+function setCondensedElementValue(condensed){
+    var value;
+ 	if(condensed) {
+         value = "  Expand   ";
+         document.getElementById("condensed").style.backgroundColor="#5bb568";}
+ 	else {
+         value =          "Condense!";
+         document.getElementById("condensed").style.backgroundColor="transparent";}
+ 	document.getElementById("condensed").value = value;
+}
+
 // ****** DISPLAY CURRENT MATRIX ****
 function displayMatrix() {
     verifyPivots();
@@ -814,7 +876,7 @@ function displayMatrix() {
     //         }
     //     thereAreWritableEntries = false;
     // }
-	if(!isInBasicForm() && condensed){
+	if(!isInBasicForm() && the.condensed){
 		switchTableauType();
 		return;
     }
@@ -823,15 +885,16 @@ function displayMatrix() {
 	var n = the.numCols;
     var numDisplayedCols = n;
     debug_me("Proceeding in displayMatrix "+ the.colMap);
-  	if(condensed) {
+  	if(the.condensed) {
         numDisplayedCols = n-m;
         debug_me("condensed");
+        }
     //write column labels
-	    for(var i = 0; i < numDisplayedCols; i++){
-            //debug_me(i + " " + the.labels +  " .... " + the.colMap);
-		    getcell(-1,i).value = the.labels[the.colMap[i]];
-	    }
+    for(var i = 0; i < numDisplayedCols; i++){
+        //debug_me(i + " " + the.labels +  " .... " + the.colMap);
+        getcell(-1,i).value = the.labels[the.colMap[i]];
     }
+    
 	var x = "";  // a string
     debug_me("about to display a "+ m+ " x " + n + " matrix");
  
@@ -858,16 +921,12 @@ cry("Finished displaying Matrix");
 return(0);
 }// ******** END OF DISPLAY ROUTINE ***************
 
-function onSwitchTableauType(){
-	//readMatrix();
-	switchTableauType();
-}
-
 function switchTableauType(){
     //alert("switchTableau");
-	if(condensed){ 
+	if(the.condensed){ 
         //remap columns
-        if(false){
+        //there are two ways to do it.  Choose one by putting false or true inside this if:
+        if(false){ 
             for(var i  = 0; i < the.numCols; i++) {
                 
                     the.colMap[i] = i;
@@ -922,18 +981,11 @@ function switchTableauType(){
 			return;
 		}
 	}	 //not condensed 
-    condensed = !condensed;
+    the.condensed = !the.condensed;
     debug_me("displaying");
     displayMatrix();
     debug_me("have displayed");
-    var value;
- 	if(condensed) {
-         value = "  Expand   ";
-         document.getElementById("condensed").style.backgroundColor="#5bb568";}
- 	else {
-         value =          "Condense!";
-         document.getElementById("condensed").style.backgroundColor="transparent";}
- 	document.getElementById("condensed").value = value;
+    setCondensedElementValue(the.condensed);
 }//end of switchTableau
 
 //----math-----------------------------------------------------------------------------
@@ -1051,6 +1103,7 @@ function verifyPivots(){
                 //remove the label
                 
             }*/
+            //to do: implement search for a pivot
             cry("no pivot claimed in row " + i );
             getcell(i, -2).value = ""; //no pivot label should be here;
             continue;
@@ -1064,7 +1117,7 @@ function verifyPivots(){
             else ok = false;
 		if(ok){
             cry("the column is pivoted as expected");
-			if(!condensed) {
+			if(!the.condensed) {
 				paintPivot(i, the.colMapInv[pivotCol] );
 				paintCol(the.colMapInv[pivotCol], "#FFFFFF", the.numRows, maxRows - 1);
 			}
@@ -1073,7 +1126,7 @@ function verifyPivots(){
         else {//remove pivot 
             cry("the column is NOT pivoted as expected");
 			the.pivots[i] = undefined;
-			if(!condensed){
+			if(!the.condensed){
 			  paintCol(the.colMapInv[pivotCol], "#FFFFFF", 0, maxRows - 1);
 			}
 			getcell(i, -2).value = "";
