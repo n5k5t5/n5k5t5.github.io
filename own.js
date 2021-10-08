@@ -62,7 +62,7 @@ modes[bigfracs] =   {   equal: (n,m) => (n[0]== m[0] && n[1] == m[1]),
 var clearCell = false;
 
 //current state of the tableau
-var the = { numRows: 0, numCols: 0, matrix: [], colMap:[], colMapInv:[], pivots: [], mode: bigfracs, condensed: false, view: fractions , labels : []};
+var the = { numRows: 0, numCols: 0, matrix: [], colMap:[], colMapInv:[], pivots: [], mode: bigfracs, condensed: false, view: fractions, labels : []};
 
 var submatrixSelectionStage = 0;
 var submat11 = 0;
@@ -80,8 +80,6 @@ var modeBtn;
 var outputElt;
 var sheet;
 var sheetForm;
-
-var view = decimals;  //how numbers are currently displayed
 
 
 function max(x,y){
@@ -412,18 +410,21 @@ function doOnLabelChange(cell,x,y){
 function doOnChangeMode(btn){  
     if(the.numRows != 0 || the.numCols != 0){
         btn.value = the.mode;
-        say("I cannot change mode now");
+        say("I cannot change mode when there is data in the matrix");
         return;
     }
     var newMode = btn.value;
     cry(newMode);
     the.mode = newMode;  
-    if(newMode == decimals) document.getElementById("view").style.visibility="hidden";
+    if(newMode == decimals) {
+        document.getElementById("view").style.visibility="hidden";
+        the.view = decimals;
+    }
     else document.getElementById("view").style.visibility="visible";
 }
 
 function changeView(v){
-    view = v;
+    the.view = v;
     displayMatrix();
     cry(v);
 }
@@ -701,20 +702,20 @@ function numberToString(n, mode){
 //create a string representation of a number, as seen in the tableau
 function numberView(n,mode){
     if(mode == decimals){
-        if(view == decimals)
+        if(the.view == decimals)
             return "" + n.toString();
     }
     if(mode == fractions){
-        if(view == fractions){
+        if(the.view == fractions){
             if(n[1] == 1) return "" + n[0].toString();
             return "" + n[0].toString() + "/" + n[1].toString();
         }
-        else {//view == decimals
+        else {//this.view == decimals
             return modes[fractions].float(n).toString();
         }
     }
     if(mode == bigfracs){
-        if(view == fractions){
+        if(the.view == fractions){
             if(n[1] == 1) return "" + n[0].toString();
             return "" + n[0].toString() + "/" + n[1].toString();
         }
@@ -850,7 +851,14 @@ function assumeState(newState){
 }
 
 function refresh(){
-    document.getElementById("mode").val = the.mode;
+    document.getElementById("mode").value = the.mode;
+    let viewElt = document.getElementById("view");
+    if(the.mode == decimals) viewElt.style.visibility="hidden";
+    else { 
+        viewElt.style.visibility="visible";
+        document.getElementById("viewselector").value = the.view;
+    }
+
     setCondensedElementValue(the.condensed);
     displayMatrix();
 }
