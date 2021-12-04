@@ -1,7 +1,7 @@
 window.onerror = myErrorTrap;
 var debug = false;
-var maxCols = 15;
-var maxRows = 25;
+var maxCols = 100;
+var maxRows = 100;
 var mathRoomKey = false;
 var dataBlock= ""; // for copying data
 var ourGreen = "#5bb568"
@@ -63,13 +63,14 @@ var clearCell = false;
 
 //current state of the tableau
 var the = { numRows: 0, numCols: 0, matrix: [], colMap:[], colMapInv:[], pivots: [], mode: bigfracs, condensed: false, view: fractions, labels : []};
-
+var undoStack = [];
+var undoDepth = 0;
 var submatrixSelectionStage = 0;
 var submat11 = 0;
 var submat12 = 0;
 var submat21 = 0;
-var submat22 =0; 
-var thereAreWritableEntries  = true;
+var submat22 = 0; 
+
 var toDo = { count : 0, queue: undefined, heap: {}};//keeping tracks of callbacks
 var pastingStage = 0;
 var pasteRegion = { x: 0, y: 0, rowLengths:[]};
@@ -234,13 +235,13 @@ function drawSpreadsheet(){
 
 function cry(s){//debug mode
     if(debug){
-        outputElt.value += (s + "\r\n-> ");
+        outputElt.value += ("\r\n" + s + "\r\n-> ");
         outputElt.scrollTop = outputElt.scrollHeight;
     }
 }
 
 function say(s){
-        outputElt.value += (s + "\r\n-> ");
+        outputElt.value += ("\r\n" + s + "\r\n>> ");
         outputElt.scrollTop = outputElt.scrollHeight;
 }
 
@@ -266,7 +267,7 @@ function doOnKeyDown(event, e, x, y){
         e.style.borderColor = "gray";
         if(e.value != ""){
             e.value = numberToString(the.matrix[x][the.colMap[y]], the.mode);
-            outputElt.value = e.value;
+            say(e.value);
             };
         e.style.backgroundColor = "#DDDDDD";
         setTimeout(function(){e.style.backgroundColor = "";}, 100);
@@ -851,7 +852,7 @@ function assumeState(newState){
 }
 
 function refresh(){
-    document.getElementById("mode").value = the.mode;
+    modeBtn.value = the.mode;
     let viewElt = document.getElementById("view");
     if(the.mode == decimals) viewElt.style.visibility="hidden";
     else { 
@@ -877,13 +878,6 @@ function setCondensedElementValue(condensed){
 // ****** DISPLAY CURRENT MATRIX ****
 function displayMatrix() {
     verifyPivots();
-    // if(thereAreWritableEntries){
-    //     for(var i = 0; i <the.numRows; i++)
-    //         for(var j = 0; j<the.numCols; j++){
-    //             getcell(1+i, 2+j).readOnly = true;
-    //         }
-    //     thereAreWritableEntries = false;
-    // }
 	if(!isInBasicForm() && the.condensed){
 		switchTableauType();
 		return;

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script language = "javascript" src = "./own.js" ></script>
 
     <head> 
@@ -16,7 +16,7 @@
         <form name = "controls">
             <input type = "button" disabled value = "Undo">
             <input type = "button" disabled value = "Redo">
-            <input type = "button" value = "Save This" onclick="say('saving');savedState=cloneState(the);document.getElementById('revertbutton').removeAttribute('disabled');">
+            <input type = "button" value="Save This" onclick="say('saving');savedState=cloneState(the);document.getElementById('revertbutton').removeAttribute('disabled');">
             <input type = "button" disabled id = "revertbutton" value = "Revert to Saved" onclick="assumeState(savedState);">
             <input type = "button" value = "Erase" onclick="erase();">
             &nbsp;&nbsp;&nbsp; &nbsp;
