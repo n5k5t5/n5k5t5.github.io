@@ -1,7 +1,7 @@
 window.onerror = myErrorTrap;
 var debug = false;
-var maxCols = 100;
-var maxRows = 100;
+var maxCols = 150;
+var maxRows = 150;
 var mathRoomKey = false;
 var dataBlock= ""; // for copying data
 var ourGreen = "#5bb568"
